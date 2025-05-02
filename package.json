@@ -14,7 +14,8 @@
   "keywords": [],
   "author": {
     "name": "Christian Alvarado",
-    "email": "tianqueal@gmail.com"
+    "email": "tianqueal@gmail.com",
+    "url": "https://github.com/tianqueal"
   },
   "license": "MIT",
   "devDependencies": {
