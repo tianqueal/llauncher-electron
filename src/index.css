@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
 :root {
-  --scheme: light dark;
+  --scheme: dark;
   color-scheme: var(--scheme);
 }
