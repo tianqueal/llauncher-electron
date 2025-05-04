@@ -1,152 +1,130 @@
-import { SettingsFieldProps } from '../types/SettingsFieldProps'
 import {
-  Checkbox,
-  Description,
   Field,
-  Input,
   Label,
-  Select,
+  Description,
+  Input,
   Switch,
   Textarea,
 } from '@headlessui/react'
 import clsx from 'clsx'
-import { CheckIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
+import { SettingsFieldProps } from '../types/SettingsFieldProps'
 import { SettingFieldType } from '../types/SettingFieldConfig'
-
-const inputClasses = clsx(
-  'mt-3 block w-full rounded-lg border-none dark:bg-white/5 px-3 py-1.5 text-sm/6',
-  'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 dark:data-focus:outline-white/25'
-)
-
-const selectClasses = clsx(inputClasses, 'appearance-none', 'dark:*:text-black')
 
 export default function SettingsField({
   config,
   value,
   onChange,
-}: SettingsFieldProps) {
-  const { id, label, description, placeholder, type, options, validation } =
-    config
+  error, // Add error prop
+}: SettingsFieldProps & { error?: string | null }) {
+  const { id, label, description, type, validation } = config
 
-  const handleChange = (v: string | number | boolean) => {
-    const targetValue =
-      type === 'number'
-        ? v === ''
-          ? '' // Allow empty string temporarily for number inputs
-          : parseFloat(String(v)) // Parse number after converting to string
-        : v
-    onChange(id, targetValue)
-  }
+  const commonInputClasses = clsx(
+    'mt-1 block w-full rounded-lg border-none dark:bg-white/5 py-1.5 px-3 text-sm/6',
+    // Add transitions for ring and color
+    'transition duration-150 ease-in-out',
+    // Default focus state using Headless UI's data attribute: remove outline, add indigo ring
+    'focus:outline-none data-focus:outline-none data-focus:ring-2 data-focus:ring-indigo-500',
+    // Error state: add red ring
+    error && 'ring-1 ring-red-500 dark:ring-red-600',
+    // Error + Focus state: ensure error ring color persists/overrides focus color
+    error && 'data-focus:ring-red-500 dark:data-focus:ring-red-600'
+  )
 
-  // Input validation props (for number and potentially text/textarea)
-  const inputProps: {
-    min?: number
-    max?: number
-    pattern?: string
-    step?: string
-  } = {}
-
-  if (type === 'number') {
-    if (validation?.min !== undefined) inputProps.min = validation.min
-    if (validation?.max !== undefined) inputProps.max = validation.max
-    inputProps.step = 'any' // Allow decimals if needed, or set specific step
-  }
-  if (validation?.pattern) {
-    inputProps.pattern = validation.pattern
-  }
-
-  return (
-    <Field className="m-0">
-      <div className="flex flex-col h-full">
-        <Label className="text-sm/6 font-medium">{label}</Label>
-        {description && (
-          <Description className="text-sm/6 dark:text-white/50 flex-1">
-            {description}
-          </Description>
-        )}
-
-        {/* Conditional Rendering based on type */}
-        {type === SettingFieldType.SELECT && options && (
-          <div className="relative">
-            <Select
-              className={selectClasses}
-              name={id}
-              value={String(value)}
-              onChange={(e) => handleChange(e.target.value)}
-              aria-label={label}
-            >
-              {options.map((option) => (
-                <option key={option} value={option.toLowerCase()}>
-                  {option}
-                </option>
-              ))}
-            </Select>
-            <ChevronDownIcon
-              className="group pointer-events-none absolute top-5 right-2.5 size-4 dark:fill-white/60"
-              aria-hidden="true"
-            />
-          </div>
-        )}
-
-        {(type === SettingFieldType.TEXT ||
-          type === SettingFieldType.NUMBER) && (
+  const renderInput = () => {
+    switch (type) {
+      case SettingFieldType.TEXT:
+        return (
           <Input
-            className={inputClasses}
-            type={type}
+            id={id}
             name={id}
-            placeholder={placeholder}
-            value={value as string | number}
-            onChange={(e) => handleChange(e.target.value)}
-            aria-label={label}
-            {...inputProps} // Spread validation props
-          />
-        )}
-
-        {/* Textarea */}
-        {type === SettingFieldType.TEXTAREA && (
-          <Textarea
-            className={clsx(
-              inputClasses,
-              'resize-none' // Prevent resizing
-            )}
-            name={id}
-            placeholder={placeholder}
+            type="text"
             value={value as string}
-            onChange={(e) => handleChange(e.target.value)}
-            aria-label={label}
-            rows={3} // Adjust rows as needed
+            onChange={(e) => onChange(id, e.target.value)}
+            className={commonInputClasses}
           />
-        )}
-
-        {/* Checkbox */}
-        {type === SettingFieldType.CHECKBOX && (
-          <Checkbox
-            className="mt-3 group size-6 rounded-md dark:bg-white/10 p-1 ring-1 dark:ring-white/15 ring-inset focus:not-data-focus:outline-none dark:data-checked:bg-white data-focus:outline data-focus:outline-offset-2 dark:data-focus:outline-white"
+        )
+      case SettingFieldType.NUMBER:
+        return (
+          <Input
+            id={id}
             name={id}
-            checked={Boolean(value)}
-            onChange={(bool) => handleChange(bool)}
-            aria-label={label}
-          >
-            <CheckIcon className="hidden size-4 dark:fill-black group-data-checked:block" />
-          </Checkbox>
-        )}
-
-        {/* Switch */}
-        {type === SettingFieldType.SWITCH && (
+            type="number"
+            value={value as number | string} // Allow string for intermediate input
+            onChange={(e) =>
+              onChange(
+                id,
+                e.target.value === '' ? '' : Number(e.target.value) // Keep empty string or convert to number
+              )
+            }
+            min={validation?.min}
+            max={validation?.max}
+            className={commonInputClasses}
+          />
+        )
+      case SettingFieldType.SWITCH:
+        return (
           <Switch
+            id={id}
             name={id}
-            checked={Boolean(value)}
-            onChange={(bool) => handleChange(bool)}
-            // Replaced dark:data-checked:bg-white/10 with data-checked:bg-green-500
-            className="mt-3 group relative flex h-7 w-14 cursor-pointer rounded-full dark:bg-white/10 p-1 ease-in-out focus:not-data-focus:outline-none data-checked:bg-green-500 data-focus:outline dark:data-focus:outline-white transition-colors duration-200"
+            checked={value as boolean}
+            onChange={(checked) => onChange(id, checked)}
+            className={clsx(
+              'group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
+              'data-checked:bg-indigo-600'
+            )}
           >
             <span
               aria-hidden="true"
-              className="pointer-events-none inline-block size-5 translate-x-0 rounded-full dark:bg-white shadow-lg ring-0 transition duration-200 ease-in-out group-data-checked:translate-x-7"
+              className={clsx(
+                'pointer-events-none inline-block size-5 translate-x-0 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                'group-data-checked:translate-x-5'
+              )}
             />
           </Switch>
-        )}
+        )
+      case SettingFieldType.TEXTAREA:
+        return (
+          <Textarea
+            id={id}
+            name={id}
+            value={value as string}
+            onChange={(e) => onChange(id, e.target.value)}
+            rows={3} // Default rows, adjust as needed
+            className={clsx(commonInputClasses, 'resize-none')} // Allow vertical resize
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  return (
+    <Field className="flex flex-col h-full">
+      {' '}
+      {/* Ensure vertical layout */}
+      <div className="flex items-center justify-between">
+        {' '}
+        {/* Keep label/switch aligned */}
+        <Label className="text-sm/6 font-medium">{label}</Label>
+        {type === SettingFieldType.SWITCH && renderInput()}
       </div>
+      {description && (
+        <Description className="text-sm/6 dark:text-white/50 flex-1">
+          {description}
+        </Description>
+      )}
+      {type !== SettingFieldType.SWITCH && renderInput()}
+      {/* Display error message or reserve space */}
+      <p
+        className={clsx(
+          'mt-1 text-xs h-4', // Add fixed height (h-4 is usually enough for text-xs)
+          error
+            ? 'text-red-500 dark:text-red-400' // Apply color only if error exists
+            : 'text-transparent' // Make text transparent if no error
+        )}
+      >
+        {error || '\u00A0'} {/* Render error or non-breaking space */}
+      </p>
     </Field>
   )
 }

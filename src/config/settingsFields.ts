@@ -7,18 +7,19 @@ import {
  * Array containing the configuration for each setting field in the SettingsView.
  */
 export const settingsFields: Array<SettingFieldConfig> = [
-  // ...existing code...
   {
     id: 'username',
     label: 'Username',
     description: 'This is the name that will be displayed in the game',
     type: SettingFieldType.TEXT,
+    required: true,
   },
   {
     id: 'parallelDownloads',
     label: 'Parallel downloads',
     description: 'Number of files being downloaded simultaneously (3-20)',
     type: SettingFieldType.NUMBER,
+    required: true,
     validation: { min: 3, max: 20 },
   },
   {
@@ -26,6 +27,7 @@ export const settingsFields: Array<SettingFieldConfig> = [
     label: 'Minimum Memory (MB)',
     description: 'Initial memory allocated to the game (e.g., 512 MB)',
     type: SettingFieldType.NUMBER,
+    required: true,
     validation: { min: 256, max: 8192 },
   },
   {
@@ -33,6 +35,7 @@ export const settingsFields: Array<SettingFieldConfig> = [
     label: 'Maximum Memory (MB)',
     description: 'Maximum memory allocated to the game (e.g., 4096 MB)',
     type: SettingFieldType.NUMBER,
+    required: true,
     validation: { min: 512, max: 16384 },
   },
   {
@@ -40,12 +43,17 @@ export const settingsFields: Array<SettingFieldConfig> = [
     label: 'Path to Java',
     description: 'Path or executable for Java Runtime (JRE/JDK)',
     type: SettingFieldType.TEXT, // Consider adding a file picker button later
+    required: false,
+    validation: {
+      pattern: '\\S',
+    },
   },
   {
     id: 'resolutionWidth',
     label: 'Window Width',
     description: 'Initial width of the game window in pixels',
     type: SettingFieldType.NUMBER,
+    required: true,
     validation: { min: 320 },
   },
   {
@@ -53,6 +61,7 @@ export const settingsFields: Array<SettingFieldConfig> = [
     label: 'Window Height',
     description: 'Initial height of the game window in pixels',
     type: SettingFieldType.NUMBER,
+    required: true,
     validation: { min: 240 },
   },
   {
@@ -61,6 +70,10 @@ export const settingsFields: Array<SettingFieldConfig> = [
     description:
       'Folder for saves, resourcepacks, etc. (Leave blank for default)',
     type: SettingFieldType.TEXT, // Consider adding a directory picker button later
+    required: false,
+    validation: {
+      pattern: '\\S',
+    },
   },
   {
     id: 'jvmArguments',
@@ -68,11 +81,13 @@ export const settingsFields: Array<SettingFieldConfig> = [
     description:
       'Additional flags for the Java Virtual Machine (use with caution)',
     type: SettingFieldType.TEXTAREA, // Use textarea for potentially longer input
+    required: false,
   },
   {
     id: 'keepLauncherOpen',
     label: 'Keep Launcher Open',
     description: 'Keep the launcher window open after the game starts',
     type: SettingFieldType.SWITCH,
+    required: false,
   },
 ]
