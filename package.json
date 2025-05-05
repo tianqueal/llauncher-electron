@@ -1,6 +1,6 @@
 {
   "name": "llauncher-electron",
-  "productName": "llauncher-electron",
+  "productName": "LLauncher",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
