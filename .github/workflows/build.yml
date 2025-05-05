@@ -1,0 +1,96 @@
+name: Build Electron App
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            arch: x64
+            target: linux
+            forge_arch: x64
+            artifact_suffix: linux-x64
+          - os: ubuntu-latest
+            arch: arm64
+            target: linux
+            forge_arch: arm64
+            artifact_suffix: linux-arm64
+          # Windows
+          - os: windows-latest
+            arch: x64
+            target: win32
+            forge_arch: x64
+            artifact_suffix: win-x64
+          - os: windows-11-arm
+            arch: arm64
+            target: win32
+            forge_arch: arm64
+            artifact_suffix: win-arm64
+          # macOS
+          - os: macos-latest
+            arch: arm64
+            target: darwin
+            forge_arch: arm64
+            artifact_suffix: mac-arm64
+          - os: macos-latest
+            arch: x64
+            target: darwin
+            forge_arch: x64
+            artifact_suffix: mac-x64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Clean install dependencies
+        run: Remove-Item -Recurse -Force node_modules, out -ErrorAction Ignore
+        if: runner.os == 'Windows'
+        shell: pwsh
+
+      - name: Clean install dependencies (Unix)
+        run: rm -rf node_modules out
+        if: runner.os != 'Windows'
+        shell: bash
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Electron app with Electron Forge
+        run: npm run make -- --platform=${{ matrix.target }} --arch=${{ matrix.forge_arch }}
+        # env:
+        #   # Signing for macOS and Windows
+        #   CSC_LINK: ${{ secrets.CSC_LINK }} # Base64 encoded .p12 or .pfx file
+        #   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }} # Password for the certificate
+
+        #   # Notarization for macOS (required for distribution outside App Store)
+        #   APPLE_ID: ${{ secrets.APPLE_ID }} # Your Apple Developer account email
+        #   APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }} # App-specific password
+        #   APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Your Apple Developer Team ID
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.artifact_suffix }}
+          path: out/make/
+          if-no-files-found: error
