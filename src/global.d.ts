@@ -15,7 +15,6 @@ declare global {
     electron: {
       // Exposed constants
       constants: {
-        // Add this object
         patchNotesBaseUrl: string;
       };
       // Theme
