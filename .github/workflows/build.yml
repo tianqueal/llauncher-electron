@@ -63,15 +63,15 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Clean install dependencies
-        run: Remove-Item -Recurse -Force node_modules, out -ErrorAction Ignore
-        if: runner.os == 'Windows'
-        shell: pwsh
-
       - name: Clean install dependencies (Unix)
         run: rm -rf node_modules out
         if: runner.os != 'Windows'
         shell: bash
+
+      - name: Clean install dependencies (Windows)
+        run: Remove-Item -Recurse -Force node_modules, out -ErrorAction Ignore
+        if: runner.os == 'Windows'
+        shell: pwsh
 
       - name: Install dependencies
         run: npm install
@@ -88,13 +88,25 @@ jobs:
         #   APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }} # App-specific password
         #   APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Your Apple Developer Team ID
 
-      - name: Get package version
+      - name: Get package version (Unix)
         id: package_version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+        if: runner.os != 'Windows'
+
+      - name: Get package version (Windows)
+        id: package_version_win
+        run: |
+          $VERSION = node -p "require('./package.json').version"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$VERSION"
+        shell: pwsh
+        if: runner.os == 'Windows'
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version }}-${{ matrix.artifact_suffix }}
+          name: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version || steps.package_version_win.outputs.version }}-${{ matrix.artifact_suffix }}
           path: out/make/
           if-no-files-found: error
