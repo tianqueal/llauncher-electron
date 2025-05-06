@@ -9,14 +9,25 @@ import {
 import clsx from 'clsx';
 import { SettingsFieldProps } from '../types/SettingsFieldProps';
 import { SettingFieldType } from '../types/SettingFieldConfig';
+import SelectControl from './forms/SelectControl';
+import SelectControlOption from './forms/SelectControlOption';
 
 export default function SettingsField({
   config,
   value,
   onChange,
-  error, // Add error prop
+  error,
 }: SettingsFieldProps & { error?: string | null }) {
-  const { id, label, description, type, validation } = config;
+  const {
+    id,
+    label,
+    description,
+    type,
+    validation,
+    placeholder,
+    required,
+    options,
+  } = config;
 
   const commonInputClasses = clsx(
     'mt-1 block w-full rounded-lg border-none dark:bg-white/5 py-1.5 px-3 text-sm/6',
@@ -33,11 +44,14 @@ export default function SettingsField({
   const renderInput = () => {
     switch (type) {
       case SettingFieldType.TEXT:
+      case SettingFieldType.PASSWORD:
         return (
           <Input
             id={id}
             name={id}
-            type="text"
+            type={type}
+            placeholder={placeholder}
+            required={required}
             value={value as string}
             onChange={(e) => onChange(id, e.target.value)}
             className={commonInputClasses}
@@ -49,6 +63,8 @@ export default function SettingsField({
             id={id}
             name={id}
             type="number"
+            placeholder={placeholder}
+            required={required}
             value={value as number | string} // Allow string for intermediate input
             onChange={(e) =>
               onChange(
@@ -87,11 +103,29 @@ export default function SettingsField({
           <Textarea
             id={id}
             name={id}
+            placeholder={placeholder}
+            required={required}
             value={value as string}
             onChange={(e) => onChange(id, e.target.value)}
             rows={3} // Default rows, adjust as needed
-            className={clsx(commonInputClasses, 'resize-none')} // Allow vertical resize
+            className={clsx(commonInputClasses, 'resize-none')}
           />
+        );
+      case SettingFieldType.SELECT:
+        return (
+          <SelectControl
+            id={id}
+            value={value as string}
+            onChange={(selectedValue) => onChange(id, selectedValue)}
+          >
+            {options?.map((option) => (
+              <SelectControlOption
+                key={option.value}
+                value={option.value}
+                label={option.label}
+              />
+            ))}
+          </SelectControl>
         );
       default:
         return null;
@@ -105,7 +139,9 @@ export default function SettingsField({
       <div className="flex items-center justify-between">
         {' '}
         {/* Keep label/switch aligned */}
-        <Label className="text-sm/6 font-medium">{label}</Label>
+        <Label htmlFor={id} className="text-sm/6 font-medium">
+          {label}
+        </Label>
         {type === SettingFieldType.SWITCH && renderInput()}
       </div>
       {description && (
