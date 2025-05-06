@@ -29,6 +29,7 @@ export default function setMainMenu(/* menu: BrowserWindow */) {
     //     },
     //   ],
     // },
+    { role: 'editMenu' },
     { role: 'viewMenu' },
     { role: 'windowMenu' },
   ];
