@@ -1,18 +1,55 @@
-import type { ForgeConfig } from '@electron-forge/shared-types';
-import { MakerSquirrel } from '@electron-forge/maker-squirrel';
-import { MakerZIP } from '@electron-forge/maker-zip';
-import { MakerDeb } from '@electron-forge/maker-deb';
-import { MakerRpm } from '@electron-forge/maker-rpm';
-import { VitePlugin } from '@electron-forge/plugin-vite';
-import { FusesPlugin } from '@electron-forge/plugin-fuses';
-import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import type { ForgeConfig } from '@electron-forge/shared-types'
+import { MakerSquirrel } from '@electron-forge/maker-squirrel'
+import { MakerDMG } from '@electron-forge/maker-dmg'
+import { MakerDeb } from '@electron-forge/maker-deb'
+import { MakerRpm } from '@electron-forge/maker-rpm'
+import { VitePlugin } from '@electron-forge/plugin-vite'
+import { FusesPlugin } from '@electron-forge/plugin-fuses'
+import { FuseV1Options, FuseVersion } from '@electron/fuses'
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    icon: 'assets/icon',
+    appBundleId: 'com.doctonight.llauncher',
+    win32metadata: {
+      CompanyName: 'Doctonight',
+      ProductName: 'LLauncher',
+      FileDescription: 'LLauncher Game Runner',
+    },
+    appCategoryType: 'public.app-category.games',
   },
   rebuildConfig: {},
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+  makers: [
+    // Windows: Squirrel creates an installer (.exe)
+    new MakerSquirrel({
+      // Icon for the Setup.exe installer itself
+      setupIcon: 'assets/icon.ico',
+      // Optional: Add certificate details if needed, though env vars are preferred
+      // certificateFile: './certs/cert.pfx',
+      // certificatePassword: process.env.CERT_PASSWORD,
+    }),
+    // macOS: DMG is the standard distributable format
+    new MakerDMG({
+      // Icon shown in the DMG window
+      icon: 'assets/icon.icns',
+      // Optional: DMG specific options like background image, icon size, etc.
+      // format: 'ULFO' // Example format setting
+    }),
+    // Linux: Standard package formats
+    new MakerRpm({
+      options: {
+        // Icon for the RPM package
+        icon: 'assets/icon.png',
+      },
+    }),
+    new MakerDeb({
+      options: {
+        // Icon for the DEB package
+        icon: 'assets/icon.png',
+      },
+    }),
+  ],
   plugins: [
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
@@ -49,6 +86,6 @@ const config: ForgeConfig = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
-};
+}
 
-export default config;
+export default config
