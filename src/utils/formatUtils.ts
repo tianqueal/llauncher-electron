@@ -1,3 +1,5 @@
+import { SettingsState } from '../config/settingsConfig';
+
 /**
  * Formats a number of bytes into a human-readable string (KB, MB, GB, etc.).
  * @param bytes The number of bytes.
@@ -17,4 +19,18 @@ export function formatBytes(bytes: number | undefined, decimals = 2): string {
     ' ' +
     sizes[unitIndex]
   );
+}
+/**
+ * Trims all string values in a settings object.
+ * @param settings The settings object to be trimmed.
+ * @returns A new settings object with all string values trimmed.
+ */
+export function trimStringSettings(settings: SettingsState): SettingsState {
+  const trimmedSettings = { ...settings };
+  for (const key in trimmedSettings) {
+    if (typeof trimmedSettings[key] === 'string') {
+      trimmedSettings[key] = trimmedSettings[key].trim();
+    }
+  }
+  return trimmedSettings;
 }
