@@ -1,4 +1,4 @@
-import { VersionType } from "../types/VersionManifest";
+import { VersionType } from '../types/VersionManifest';
 
 const remoteOptions: {
   [key: string]: {
