@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { usePatchNotes } from '../hooks/usePatchNotes';
-import Card from './Card';
+import Container from './Container';
 import Spinner from './Spinner';
 
 // --- Constants ---
@@ -45,7 +45,7 @@ export default function VersionImage({
   // --- Render ---
   return (
     // Card acts as the main container with aspect ratio and overflow hidden
-    <Card className="relative flex aspect-square items-center justify-center overflow-hidden dark:bg-white/10">
+    <Container className="relative flex aspect-square items-center justify-center overflow-hidden dark:bg-white/10">
       {/* Blurred Background Layer (z-0) */}
       {/* Renders behind everything else when a version is selected */}
       {showBlurredBackground && (
@@ -123,6 +123,6 @@ export default function VersionImage({
           </motion.div>
         )}
       </AnimatePresence>
-    </Card>
+    </Container>
   );
 }
