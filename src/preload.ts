@@ -12,14 +12,13 @@ import {
   LaunchOutputArgs,
   LaunchStatusArgs,
 } from './types/IpcEvents';
-
-const constants = {
-  patchNotesBaseUrl: 'https://launchercontent.mojang.com',
-};
+import environments from './utils/enviroments.vite';
 
 contextBridge.exposeInMainWorld('electron', {
   // Expose constants
-  constants,
+  constants: {
+    patchNotesBaseUrl: environments.VITE_PATCH_NOTES_BASE_URL,
+  },
 
   // Theme
   onUpdateTheme: (
