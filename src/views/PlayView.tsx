@@ -8,12 +8,12 @@ import PlayButton from '../components/PlayButton';
 import { useLocalVersions } from '../hooks/useLocalVersions';
 import { useVersionDetails } from '../hooks/useVersionDetails';
 import { LaunchStatus } from '../types/LaunchStatus';
-import { VersionType } from '../types/VersionManifest';
 import PlaySelectVersion from '../components/PlaySelectVersion';
 import { useLaunchManager } from '../hooks/useLaunchManager';
 import LaunchProgressDisplay from '../components/LaunchProgressDisplay';
 import { useSettings } from '../hooks/useSettings';
 import LoadingOverlay from '../components/LoadingOverlay';
+import remoteOptions from '../utils/remoteOptions';
 
 export default function PlayView() {
   // --- Hooks ---
@@ -163,9 +163,16 @@ export default function PlayView() {
 
     // 3. Remote (Available Releases) Group
     // Fetch a decent number initially, then filter and slice
-    const remoteOptionsRaw = getFilteredVersionOptions([
-      VersionType.Release,
-    ]).slice(0, 20);
+    const remoteOptionKey = settings.showAllVersions
+      ? 'allVersions'
+      : 'recommended';
+
+    const { label, options } = remoteOptions[remoteOptionKey];
+
+    const remoteOptionsRaw = getFilteredVersionOptions(options.types).slice(
+      0,
+      options.maxCount,
+    );
     const availableRemoteOptions = remoteOptionsRaw.filter(
       (option) => !processedIds.has(option.value),
     ); // Exclude if already processed (latest or local)
@@ -174,7 +181,7 @@ export default function PlayView() {
     if (availableRemoteOptions.length > 0) {
       // Map to the simpler { value, label } structure for consistency
       groups.push({
-        label: 'Available Releases',
+        label,
         options: availableRemoteOptions.map((opt) => ({
           value: opt.value,
           label: opt.label,

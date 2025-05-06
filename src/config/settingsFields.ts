@@ -90,4 +90,12 @@ export const settingsFields: Array<SettingFieldConfig> = [
     type: SettingFieldType.SWITCH,
     required: false,
   },
+  {
+    id: 'showAllVersions',
+    label: 'Show All Versions',
+    description:
+      'Display all available game versions in the selector (possibly unstable)',
+    type: SettingFieldType.SWITCH,
+    required: false,
+  },
 ];

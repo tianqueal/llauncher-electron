@@ -56,21 +56,16 @@ export function useVersionManifest() {
     setError(null);
   }, []);
 
-  // Memoize the base list of all relevant version options (Release and Snapshot)
+  // Memoize the base list of all relevant version options
   const baseVersionOptions = useMemo<Array<VersionOption>>(() => {
     if (!manifest) return [];
     console.log('useVersionManifest: Recalculating baseVersionOptions');
     // Filter for relevant types first, then map
-    return manifest.versions
-      .filter(
-        (v: VersionInfo) =>
-          v.type === VersionType.Release || v.type === VersionType.Snapshot,
-      )
-      .map((v: VersionInfo) => ({
-        value: v.id,
-        label: `${v.type === VersionType.Snapshot ? 'Snapshot ' : ''}${v.id}`, // Add prefix for snapshots
-        type: v.type,
-      }));
+    return manifest.versions.map((v: VersionInfo) => ({
+      value: v.id,
+      label: `${v.type === VersionType.Snapshot ? 'Snapshot ' : ''}${v.id}`, // Add prefix for snapshots
+      type: v.type,
+    }));
     // Consider adding sorting here if needed (e.g., by release time descending)
     // .sort((a, b) => new Date(b.releaseTime).getTime() - new Date(a.releaseTime).getTime()); // Requires releaseTime in VersionInfo
   }, [manifest]); // Only depends on the manifest itself

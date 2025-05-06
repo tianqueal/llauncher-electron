@@ -13,6 +13,7 @@ export interface SettingsState {
   jvmArguments: string;
   parallelDownloads: number;
   lastSelectedVersion?: string;
+  showAllVersions?: boolean;
   [key: string]: string | number | boolean; // Allow index signature for dynamic access
 }
 
@@ -31,4 +32,5 @@ export const defaultSettings: SettingsState = {
   jvmArguments: '',
   parallelDownloads: 5,
   lastSelectedVersion: '',
+  showAllVersions: false,
 };
