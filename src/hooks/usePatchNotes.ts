@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PatchNotes } from '../types/PatchNotes';
 import { getErrorMessage } from '../utils/errorUtils';
+import { toast } from 'react-toastify';
 
 /**
  * Hook to fetch and manage the Game patch notes data.
@@ -32,6 +33,9 @@ export function usePatchNotes() {
         const errorMessage = getErrorMessage(err, 'Error fetching patch notes');
         console.error(`usePatchNotes: ${errorMessage}:`, err);
         setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
         setPatchNotes(null);
       } finally {
         setIsLoading(false);

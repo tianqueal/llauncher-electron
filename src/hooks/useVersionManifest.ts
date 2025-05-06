@@ -6,6 +6,7 @@ import {
 } from '../types/VersionManifest';
 import { VersionOption } from '../types/VersionOption';
 import { getErrorMessage } from '../utils/errorUtils';
+import { toast } from 'react-toastify';
 
 export function useVersionManifest() {
   const [manifest, setManifest] = useState<VersionManifest | null>(null);
@@ -25,16 +26,21 @@ export function useVersionManifest() {
           console.log('useVersionManifest: Manifest data received.');
           setManifest(data);
         } else {
-          console.error(
-            'useVersionManifest: Received null manifest data from main process.',
-          );
-          setError('Could not load version manifest. Check main process logs.');
+          const errorMessage = 'Received null manifest data from main process.';
+          console.error(`useVersionManifest: ${errorMessage}`);
+          setError(errorMessage);
+          toast(errorMessage, {
+            type: 'error',
+          });
           setManifest(null);
         }
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(err, 'Error fetching manifest');
         console.error(`useVersionManifest: ${errorMessage}:`, err);
         setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
         setManifest(null);
       } finally {
         setIsLoading(false);

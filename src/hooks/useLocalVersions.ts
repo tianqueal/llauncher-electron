@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { LocalVersion } from '../types/LocalVersion';
 import { compareVersions } from '../utils/versionUtils';
 import { getErrorMessage } from '../utils/errorUtils';
+import { toast } from 'react-toastify';
 
 /**
  * Custom hook to manage the list of installed versions and related actions.
@@ -32,6 +33,9 @@ export function useLocalVersions() {
         const errorMessage = getErrorMessage(err, 'Error loading versions');
         console.error(`useVersions: ${errorMessage}`, err);
         setError(errorMessage);
+        toast(`Error loading versions: ${errorMessage}`, {
+          type: 'error',
+        });
         setLocalVersions([]); // Clear versions on error
       } finally {
         setIsLoading(false);
@@ -62,11 +66,15 @@ export function useLocalVersions() {
         const result = await window.electron.deleteVersion(id);
         if (!result.success) {
           // Deletion failed in main process, revert UI and show error
-          console.error(
-            `useVersions: Failed to delete version ${id}:`,
+          const errorMessage = getErrorMessage(
             result.error,
+            `Failed to delete version ${id}`,
           );
-          setError(result.error || `Failed to delete version ${id}`);
+          console.error(`useVersions: ${errorMessage}:`, result.error);
+          setError(errorMessage);
+          toast(errorMessage, {
+            type: 'error',
+          });
           // Add the version back if it was found
           if (versionToDelete) {
             setLocalVersions((prev) =>
@@ -76,6 +84,9 @@ export function useLocalVersions() {
         } else {
           // Deletion successful in main process, UI already updated
           console.log(`useVersions: Successfully deleted version ${id}`);
+          toast(`Version ${id} deleted successfully.`, {
+            type: 'success',
+          });
         }
       } catch (err: unknown) {
         // IPC error, revert UI and show error
@@ -85,6 +96,9 @@ export function useLocalVersions() {
         );
         console.error(`useVersions: ${errorMessage}:`, err);
         setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
         // Add the version back if it was found
         if (versionToDelete) {
           setLocalVersions((prev) =>
@@ -102,8 +116,11 @@ export function useLocalVersions() {
   const handleReinstall = useCallback(async (id: string) => {
     // TODO: Implement IPC call to main process for reinstallation
     console.log(`useVersions: Requesting reinstall for version ${id}`);
-    alert(
+    toast(
       `Mock reinstall for version ${id}. Implement actual reinstall via IPC.`,
+      {
+        type: 'info',
+      },
     );
     // try {
     //   setIsLoading(true); // Or a specific installing state
@@ -121,7 +138,9 @@ export function useLocalVersions() {
   const handleInstallNew = useCallback(async () => {
     // TODO: Implement logic to show install options / trigger install process via IPC
     console.log('useVersions: Requesting install new version');
-    alert('Mock install new version. Implement actual install process.');
+    toast('Mock install new version. Implement actual install process.', {
+      type: 'info',
+    });
   }, []);
 
   // Function to clear the error state if needed externally

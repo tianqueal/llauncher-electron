@@ -9,6 +9,7 @@ import {
 } from '../types/IpcEvents';
 import { DownloadStatus } from '../types/DownloadStatus';
 import { getErrorMessage } from '../utils/errorUtils';
+import { toast } from 'react-toastify';
 
 interface FileProgress {
   progress: number; // -1 if total size unknown, 0-100 otherwise
@@ -74,6 +75,10 @@ export function useLaunchManager() {
 
     const handleStatus = (_event: IpcRendererEvent, args: LaunchStatusArgs) => {
       console.log('Launch Status Update:', args);
+
+      if (args.status === LaunchStatus.ERROR)
+        toast(args.message, { type: 'error' });
+
       setLaunchStatus(args.status);
       setLaunchMessage(
         args.message ||

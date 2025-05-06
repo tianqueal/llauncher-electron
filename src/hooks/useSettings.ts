@@ -5,6 +5,7 @@ import { debounce, DebouncedFunc } from 'lodash';
 import { SettingFieldType } from '../types/SettingFieldConfig';
 import { settingsFields } from '../config/settingsFields';
 import { SettingsErrors } from '../types/SettingsErrors';
+import { toast } from 'react-toastify';
 
 /**
  * Trims whitespace from all string values in a settings object.
@@ -153,13 +154,21 @@ export function useSettings() {
           setShowSaveSuccess(true); // Set save success
           setTimeout(() => setShowSaveSuccess(false), 1500);
         } else {
-          console.error('useSettings: Explicit save failed:', result.error);
-          setError(result.error || 'Unknown error saving settings');
+          const errorMessage =
+            result.error || 'Unknown error during explicit save';
+          console.error('useSettings: Explicit save failed:', errorMessage);
+          setError(errorMessage);
+          toast(errorMessage, {
+            type: 'error',
+          });
         }
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(err, 'Error during explicit save');
         console.error(`useSettings: ${errorMessage}:`, err);
         setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
       } finally {
         setIsSaving(false); // Clear saving state
       }
@@ -191,6 +200,9 @@ export function useSettings() {
         const errorMessage = getErrorMessage(err, 'Error loading settings');
         console.error(`useSettings: ${errorMessage}:`, err);
         setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
       } finally {
         setIsLoading(false);
         console.log('useSettings: isLoading set to false.');
@@ -315,7 +327,13 @@ export function useSettings() {
           'useSettings: Explicit save prevented due to validation errors.',
           currentErrors,
         );
-        setError('Please fix the errors highlighted below before saving.'); // Set general error
+        const errorMessage =
+          'Please fix the errors highlighted below before saving.';
+        setError(errorMessage); // Set general error
+        toast(errorMessage, {
+          type: 'error',
+        });
+
         return; // Don't save
       }
       // --- End Validation ---
@@ -352,14 +370,21 @@ export function useSettings() {
         setShowResetSuccess(true); // Set reset success
         setTimeout(() => setShowResetSuccess(false), 1500);
       } else {
-        console.error('useSettings: Reset failed during save:', result.error);
-        setError(result.error || 'Unknown error resetting settings');
+        const errorMessage = result.error || 'Unknown error during reset save';
+        console.error('useSettings: Reset failed during save:', errorMessage);
+        setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
         // Consider reverting local state if save fails? Or show error and let user retry.
       }
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(err, 'Error during reset');
       console.error(`useSettings: ${errorMessage}:`, err);
       setError(errorMessage);
+      toast(errorMessage, {
+        type: 'error',
+      });
     } finally {
       setIsSaving(false); // Clear saving state
     }

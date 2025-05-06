@@ -3,7 +3,6 @@ import clsx from 'clsx';
 import { useState, useEffect, useMemo } from 'react';
 import Card from '../components/Card';
 import { useVersionManifest } from '../hooks/useVersionManifest';
-import Dialog from '../components/Dialog';
 import VersionImage from '../components/VersionImage';
 import PlayButton from '../components/PlayButton';
 import { useLocalVersions } from '../hooks/useLocalVersions';
@@ -23,7 +22,6 @@ export default function PlayView() {
     getFilteredVersionOptions,
     isLoading: isLoadingManifest,
     error: manifestError,
-    clearError: clearManifestError,
   } = useVersionManifest();
 
   // --- Settings Hook ---
@@ -42,9 +40,8 @@ export default function PlayView() {
   // --- Hook for Version Details ---
   const {
     versionDetails,
-    isLoading: isLoadingDetails, // Rename isLoading
-    error: detailsError, // Rename error
-    clearError: clearDetailsError, // Rename clearError
+    isLoading: isLoadingDetails,
+    error: detailsError,
   } = useVersionDetails(selectedVersion);
 
   // --- Hook for Launch Logic ---
@@ -57,7 +54,6 @@ export default function PlayView() {
     processedFilesCount,
     handlePlay,
     handleKill,
-    clearLaunchError,
   } = useLaunchManager();
 
   // Combine loading states specifically for the version options/selection logic
@@ -76,11 +72,11 @@ export default function PlayView() {
     detailsError ||
     (launchStatus === LaunchStatus.ERROR ? launchMessage : null);
 
-  const clearError = () => {
-    if (manifestError) clearManifestError();
-    if (detailsError) clearDetailsError();
-    if (launchStatus === LaunchStatus.ERROR) clearLaunchError();
-  };
+  // const clearError = () => {
+  //   if (manifestError) clearManifestError();
+  //   if (detailsError) clearDetailsError();
+  //   if (launchStatus === LaunchStatus.ERROR) clearLaunchError();
+  // };
 
   // --- Effects ---
   // Set default selected version from manifest
@@ -225,18 +221,6 @@ export default function PlayView() {
   return (
     <div className="relative grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
       <VersionImage selectedVersion={selectedVersion} />
-
-      {/* Error Dialog - uses combined error state */}
-      {error && !isLoadingAnything && launchStatus !== LaunchStatus.RUNNING && (
-        // Show if error exists and nothing is loading
-        <Dialog
-          variant="error"
-          title="Error"
-          description={error}
-          onClose={clearError}
-          className="fixed right-5 bottom-5 z-30"
-        />
-      )}
 
       <Card
         className={clsx(

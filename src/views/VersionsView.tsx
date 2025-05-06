@@ -4,22 +4,15 @@ import clsx from 'clsx';
 import { useLocalVersions } from '../hooks/useLocalVersions';
 import FormButton from '../components/FormButton';
 import Spinner from '../components/Spinner';
-import Dialog from '../components/Dialog';
 import { formatBytes } from '../utils/formatUtils';
 import { getErrorMessage } from '../utils/errorUtils';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'react-toastify';
 
 export default function VersionsView() {
-  const {
-    localVersions,
-    isLoading,
-    isDeleting,
-    error,
-    handleDelete,
-    // handleReinstall,
-    clearError,
-  } = useLocalVersions();
+  const { localVersions, isLoading, isDeleting, error, handleDelete } =
+    useLocalVersions();
 
   // const { getFilteredVersionOptions } = useVersionManifest()
 
@@ -44,13 +37,16 @@ export default function VersionsView() {
       if (!result.success) {
         // Optionally show an error to the user if opening fails
         console.error('Failed to open directory:', result.error);
-        // You could use the Dialog component here if desired
-        alert(`Error opening directory: ${result.error}`);
+        toast(`Error opening directory: ${result.error}`, {
+          type: 'error',
+        });
       }
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(err, 'IPC Error opening directory');
       console.error(`VersionsView: ${errorMessage}`, err);
-      alert(`Error: ${errorMessage}`);
+      toast(`Error opening directory: ${errorMessage}`, {
+        type: 'error',
+      });
     }
   };
 
@@ -59,16 +55,6 @@ export default function VersionsView() {
       {/* Loading Overlay */}
       <LoadingOverlay isLoading={isLoading} />
 
-      {/* Error Display */}
-      {error && (
-        <Dialog
-          variant="error"
-          title="Error"
-          description={error}
-          onClose={clearError}
-          className="fixed right-5 bottom-5 z-30"
-        />
-      )}
       <Card
         className={clsx(
           'transition-opacity duration-300',

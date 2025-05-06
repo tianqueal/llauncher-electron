@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { VersionDetails } from '../types/VersionDetails';
 import { getErrorMessage } from '../utils/errorUtils';
+import { toast } from 'react-toastify';
 
 /**
  * Hook to fetch detailed information for a specific Game version.
@@ -36,10 +37,12 @@ export function useVersionDetails(versionId: string | null) {
           console.log(`useVersionDetails: Details received for ${versionId}.`);
           setVersionDetails(data);
         } else {
-          console.error(
-            `useVersionDetails: Received null details for ${versionId} from main process.`,
-          );
-          setError(`Could not load details for version ${versionId}.`);
+          const errorMessage = `No details found for version ${versionId}.`;
+          console.error(`useVersionDetails: ${errorMessage}`);
+          setError(errorMessage);
+          toast(errorMessage, {
+            type: 'error',
+          });
           setVersionDetails(null);
         }
       } catch (err: unknown) {
@@ -49,6 +52,9 @@ export function useVersionDetails(versionId: string | null) {
         );
         console.error(`useVersionDetails: ${errorMessage}:`, err);
         setError(errorMessage);
+        toast(errorMessage, {
+          type: 'error',
+        });
         setVersionDetails(null);
       } finally {
         setIsLoading(false);

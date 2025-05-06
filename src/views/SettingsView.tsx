@@ -9,7 +9,6 @@ import FormButton from '../components/FormButton'; // Import FormButtonProps
 import LoadingOverlay from '../components/LoadingOverlay';
 import { ReactNode } from 'react';
 import { FormButtonProps } from '../types/FormButtonProps';
-import Dialog from '../components/Dialog';
 
 // --- Local Sub-component for Action Buttons ---
 interface SettingsActionButtonProps extends FormButtonProps {
@@ -65,7 +64,6 @@ export default function SettingsView() {
     isSaving,
     showSavedSuccess,
     showResetSuccess,
-    error,
     validationErrors,
     hasValidationErrors,
     handleChange,
@@ -76,19 +74,6 @@ export default function SettingsView() {
   return (
     <div className="relative flex w-full max-w-4xl justify-center">
       <LoadingOverlay isLoading={isLoading} />
-
-      {/* Display general save error if present */}
-      {error && (
-        <Dialog
-          variant="error"
-          title="Save Error"
-          description={error}
-          onClose={() => {
-            /* Optionally clear the general error here if needed */
-          }}
-          className="fixed right-5 bottom-5 z-30" // Adjust position as needed
-        />
-      )}
 
       <form
         onSubmit={handleSave}
