@@ -1,7 +1,7 @@
 import { Field, Fieldset, Legend } from '@headlessui/react';
 import clsx from 'clsx';
 import { useState, useEffect, useMemo } from 'react';
-import Card from '../components/Card';
+import Container from '../components/Container';
 import { useVersionManifest } from '../hooks/useVersionManifest';
 import VersionImage from '../components/VersionImage';
 import PlayButton from '../components/PlayButton';
@@ -229,7 +229,7 @@ export default function PlayView() {
     <div className="relative grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
       <VersionImage selectedVersion={selectedVersion} />
 
-      <Card
+      <Container
         className={clsx(
           'relative',
           (isLoadingOptions || isLoadingSettings) &&
@@ -298,7 +298,7 @@ export default function PlayView() {
           totalDownloadedMB={totalDownloadedMB}
           totalSizeMB={totalSizeMB}
         />
-      </Card>
+      </Container>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import Card from '../components/Card';
+import Container from '../components/Container';
 import { version } from '../../package.json'; // Import version from package.json
 import { motion } from 'motion/react';
 
@@ -22,7 +22,7 @@ export default function AboutView() {
     // Add padding like other views and ensure centering
     <div className="flex w-full max-w-4xl">
       {/* Ensure Card takes appropriate width */}
-      <Card>
+      <Container>
         <h2 className="mb-6 text-xl font-semibold">
           {' '}
           {/* Centered title */}
@@ -73,7 +73,7 @@ export default function AboutView() {
             Visit on GitHub for more projects!
           </p>
         </div>
-      </Card>
+      </Container>
     </div>
   );
 }

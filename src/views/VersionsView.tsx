@@ -1,8 +1,8 @@
-import Card from '../components/Card';
+import Container from '../components/Container';
 import { FolderOpenIcon, TrashIcon } from '@heroicons/react/20/solid';
 import clsx from 'clsx';
 import { useLocalVersions } from '../hooks/useLocalVersions';
-import FormButton from '../components/FormButton';
+import FormButton from '../components/forms/FormButton';
 import Spinner from '../components/Spinner';
 import { formatBytes } from '../utils/formatUtils';
 import { getErrorMessage } from '../utils/errorUtils';
@@ -55,7 +55,7 @@ export default function VersionsView() {
       {/* Loading Overlay */}
       <LoadingOverlay isLoading={isLoading} />
 
-      <Card
+      <Container
         className={clsx(
           'transition-opacity duration-300',
           isLoading && 'pointer-events-none opacity-50',
@@ -160,7 +160,7 @@ export default function VersionsView() {
               })}
           </AnimatePresence>
         </div>
-      </Card>
+      </Container>
     </div>
   );
 }
