@@ -2,19 +2,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import { PatchNotes } from '../types/PatchNotes';
-
-const PATCH_NOTES_URL =
-  'https://launchercontent.mojang.com/v2/javaPatchNotes.json';
+import environments from '../utils/environments.node';
 
 /**
- * Fetches the patch notes from Mojang.
+ * Fetches the patch notes.
  * @returns A promise resolving to the patch notes data or null if fetch fails.
  */
 async function fetchPatchNotesFromWeb(): Promise<PatchNotes | null> {
-  console.log('PatchNotesManager: Fetching patch notes from', PATCH_NOTES_URL);
+  console.log(
+    'PatchNotesManager: Fetching patch notes from',
+    environments.PATCH_NOTES_URL,
+  );
   return new Promise((resolve) => {
     https
-      .get(PATCH_NOTES_URL, (res) => {
+      .get(environments.PATCH_NOTES_URL, (res) => {
         if (res.statusCode !== 200) {
           console.error(
             `PatchNotesManager: Failed to fetch patch notes. Status Code: ${res.statusCode}`,

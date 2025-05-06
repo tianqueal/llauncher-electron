@@ -93,7 +93,7 @@ export interface JavaVersion {
 
 export interface Library {
   downloads: LibraryDownloads;
-  name: string; // e.g., "com.mojang:patchy:1.1"
+  name: string;
   rules?: Array<LibraryRule>;
   natives?: Natives; // For native libraries
   extract?: ExtractRule; // For extracting natives

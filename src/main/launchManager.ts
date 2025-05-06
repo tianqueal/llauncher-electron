@@ -16,6 +16,8 @@ import { AssetIndexDetails } from '../types/AssetsIndexDetails';
 import { getErrorMessage } from '../utils/errorUtils';
 import { LaunchStatus } from '../types/LaunchStatus';
 import extract from 'extract-zip';
+import { UserType } from '../types/UserType';
+import environments from '../utils/environments.node';
 
 // Define paths structure (could be passed in or derived)
 interface GamePaths {
@@ -324,7 +326,7 @@ function getAssetDownloadTasks(
   paths: GamePaths,
 ): Array<DownloadTask> {
   const tasks: Array<DownloadTask> = [];
-  const assetBaseUrl = 'https://resources.download.minecraft.net/';
+  const assetBaseUrl = environments.ASSET_BASE_URL;
 
   console.log(`LaunchManager: Generating asset download tasks from index...`);
 
@@ -346,61 +348,6 @@ function getAssetDownloadTasks(
   console.log(`LaunchManager: Generated ${tasks.length} asset download tasks.`);
   return tasks;
 }
-
-// /**
-//  * Identifies required library and client JAR downloads.
-//  */
-// function getRequiredDownloads(
-//   versionDetails: VersionDetails,
-//   paths: GamePaths
-// ): Array<DownloadTask> {
-//   const tasks: Array<DownloadTask> = []
-
-//   // 1. Client JAR
-//   if (versionDetails.downloads.client) {
-//     tasks.push({
-//       url: versionDetails.downloads.client.url,
-//       destination: path.join(paths.versionPath, `${versionDetails.id}.jar`),
-//       sha1: versionDetails.downloads.client.sha1,
-//       size: versionDetails.downloads.client.size,
-//     })
-//   }
-
-//   // 2. Libraries
-//   versionDetails.libraries.forEach((lib) => {
-//     // Check rules first
-//     const allow = lib.rules ? lib.rules.every(checkRule) : true
-//     if (!allow) return
-
-//     // Standard artifact
-//     if (lib.downloads.artifact) {
-//       tasks.push({
-//         url: lib.downloads.artifact.url,
-//         // Construct path like .../libraries/com/mojang/patchy/1.1/patchy-1.1.jar
-//         destination: path.join(
-//           paths.librariesPath,
-//           lib.downloads.artifact.path
-//         ),
-//         sha1: lib.downloads.artifact.sha1,
-//         size: lib.downloads.artifact.size,
-//       })
-//     }
-
-//     // Natives (if applicable for current OS)
-//     // TODO: Implement native handling (finding classifier, adding download task)
-//     // Need to determine the correct native classifier based on OS (e.g., 'natives-windows')
-//     // The destination for natives might be different initially before extraction
-//   })
-
-//   // 3. Asset Index
-//   // TODO: Add download task for asset index (versionDetails.assetIndex.url)
-//   // Destination: path.join(paths.assetsPath, 'indexes', `${versionDetails.assetIndex.id}.json`)
-
-//   // 4. Assets (requires parsing asset index first)
-//   // TODO: Implement asset index parsing and add download tasks for individual assets
-
-//   return tasks
-// }
 
 /**
  * Constructs the classpath string.

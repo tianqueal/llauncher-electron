@@ -2,22 +2,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import { VersionManifest } from '../types/VersionManifest';
-
-const MANIFEST_URL =
-  'https://launchermeta.mojang.com/mc/game/version_manifest_v2.json';
+import environments from '../utils/environments.node';
 
 /**
- * Fetches the version manifest from Mojang.
+ * Fetches the version manifest.
  * @returns A promise resolving to the manifest data or null if fetch fails.
  */
 async function fetchManifestFromWeb(): Promise<VersionManifest | null> {
-  console.log('ManifestManager: Fetching manifest from', MANIFEST_URL);
+  console.log(
+    'ManifestManager: Fetching manifest from',
+    environments.MANIFEST_URL,
+  );
   return new Promise((resolve) => {
     https
-      .get(MANIFEST_URL, (res) => {
+      .get(environments.MANIFEST_URL, (res) => {
         if (res.statusCode !== 200) {
           console.error(
-            `ManifestManager: Failed to fetch manifest. Status Code: ${res.statusCode}`,
+            `ManifestManager: Failed to fetch manifest. Status Code: ${res.statusCode}. Manifest URL: ${environments.MANIFEST_URL}`,
           );
           res.resume(); // Consume response data to free up memory
           return resolve(null);
