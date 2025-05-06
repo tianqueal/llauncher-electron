@@ -1,9 +1,14 @@
+// --- Import Env Variables ---
+import config from 'dotenv';
+config.config();
+// --- End Import Env Variables ---
+
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import setMainMenu from './config/menu';
 import { registerIpcHandlers } from './main/ipcHandlers';
-import { ensureVersionsDirExists } from './main/versionsManager';
+import { ensureVersionsDirExists } from './utils/fsUtils';
 import fs from 'node:fs';
 import {
   ensureManifestExists,
