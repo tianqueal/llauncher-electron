@@ -37,3 +37,19 @@ export async function getDirectorySize(directoryPath: string): Promise<number> {
   }
   return totalSize;
 }
+
+/**
+ * Ensures the versions directory exists.
+ * @param versionsPath The absolute path to the versions directory.
+ */
+export function ensureVersionsDirExists(versionsPath: string): void {
+  if (!fs.existsSync(versionsPath)) {
+    try {
+      fs.mkdirSync(versionsPath, { recursive: true });
+      console.log('Versions directory created at:', versionsPath);
+    } catch (err) {
+      console.error('Error creating versions directory:', err);
+      // Consider throwing the error or handling it more robustly
+    }
+  }
+}

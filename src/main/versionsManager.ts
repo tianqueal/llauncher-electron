@@ -5,23 +5,7 @@ import { LocalVersion, LocalVersionStatus } from '../types/LocalVersion';
 import { VersionDetails } from '../types/VersionDetails';
 import { VersionManifest } from '../types/VersionManifest';
 import { getErrorMessage } from '../utils/errorUtils';
-import { getDirectorySize } from '../utils/fsUtils';
-
-/**
- * Ensures the versions directory exists.
- * @param versionsPath The absolute path to the versions directory.
- */
-export function ensureVersionsDirExists(versionsPath: string): void {
-  if (!fs.existsSync(versionsPath)) {
-    try {
-      fs.mkdirSync(versionsPath, { recursive: true });
-      console.log('Versions directory created at:', versionsPath);
-    } catch (err) {
-      console.error('Error creating versions directory:', err);
-      // Consider throwing the error or handling it more robustly
-    }
-  }
-}
+import { ensureVersionsDirExists, getDirectorySize } from '../utils/fsUtils';
 
 /**
  * Lists installed versions based on subdirectories.
