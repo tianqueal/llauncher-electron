@@ -88,9 +88,13 @@ jobs:
         #   APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }} # App-specific password
         #   APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Your Apple Developer Team ID
 
+      - name: Get package version
+        id: package_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.artifact_suffix }}
+          name: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version }}-${{ matrix.artifact_suffix }}
           path: out/make/
           if-no-files-found: error
