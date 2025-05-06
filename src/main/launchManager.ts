@@ -474,7 +474,7 @@ export async function launchVersion(
       ) {
         const errorMsg = `Failed to download or validate ${
           initialResults.failureCount + initialResults.validationFailures
-        } core files. Check logs.`;
+        } core files.`;
         console.error(`LaunchManager: ${errorMsg}`);
         mainWindow?.webContents.send('launch-status', {
           status: 'error',
@@ -531,7 +531,7 @@ export async function launchVersion(
       ) {
         const errorMsg = `Failed to download or validate ${
           assetResults.failureCount + assetResults.validationFailures
-        } assets. Check logs.`;
+        } assets.`;
         console.error(`LaunchManager: ${errorMsg}`);
         mainWindow?.webContents.send('launch-status', {
           status: 'error',
