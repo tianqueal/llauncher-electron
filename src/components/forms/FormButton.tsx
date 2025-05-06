@@ -1,6 +1,6 @@
 import { Button } from '@headlessui/react';
 import clsx from 'clsx';
-import { FormButtonProps } from '../types/FormButtonProps';
+import { FormButtonProps } from '../../types/FormButtonProps';
 
 export default function FormButton({
   variant = 'primary',
