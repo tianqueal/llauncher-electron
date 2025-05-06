@@ -6,17 +6,16 @@ import { MakerRpm } from '@electron-forge/maker-rpm';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
-import { productName } from './package.json';
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: 'assets/icon',
-    name: productName,
+    name: 'LLauncher (Beta)',
     appBundleId: 'com.doctonight.llauncher',
     win32metadata: {
       CompanyName: 'Doctonight',
-      ProductName: productName,
+      ProductName: 'LLauncher (Beta)',
       FileDescription: 'LLauncher Game Runner (Beta)',
       OriginalFilename: 'LLauncher.exe',
     },
