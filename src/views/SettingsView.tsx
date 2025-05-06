@@ -5,7 +5,7 @@ import Spinner from '../components/Spinner';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { useSettings } from '../hooks/useSettings';
 import { settingsFields } from '../config/settingsFields';
-import FormButton from '../components/FormButton'; // Import FormButtonProps
+import FormButton from '../components/forms/FormButton';
 import LoadingOverlay from '../components/LoadingOverlay';
 import { ReactNode } from 'react';
 import { FormButtonProps } from '../types/FormButtonProps';
