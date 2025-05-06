@@ -1,3 +1,5 @@
+import { UserType } from '../types/UserType';
+
 /**
  * Defines the structure for the application settings.
  */
@@ -14,6 +16,13 @@ export interface SettingsState {
   parallelDownloads: number;
   lastSelectedVersion?: string;
   showAllVersions?: boolean;
+  // --- Authentication Fields ---
+  accessToken?: string;
+  clientToken?: string;
+  uuid?: string;
+  xuid?: string;
+  userType?: UserType;
+  // --- End Authentication Fields ---
   [key: string]: string | number | boolean; // Allow index signature for dynamic access
 }
 
@@ -33,4 +42,11 @@ export const defaultSettings: SettingsState = {
   parallelDownloads: 5,
   lastSelectedVersion: '',
   showAllVersions: false,
+  // --- Default Authentication Fields ---
+  accessToken: '',
+  clientToken: '',
+  uuid: '',
+  xuid: '',
+  userType: UserType.OFFLINE,
+  // --- End Default Authentication Fields ---
 };

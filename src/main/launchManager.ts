@@ -34,8 +34,8 @@ interface AuthInfo {
   username: string;
   uuid: string;
   accessToken: string;
-  userType: string; // e.g., 'msa'
-  xuid?: string; // Optional, for Xbox Live auth
+  userType: UserType;
+  xuid?: string;
 }
 
 let runningProcess: ChildProcess | null = null; // Keep track of the running game process
@@ -523,9 +523,10 @@ export async function launchVersion(
     const authInfo: AuthInfo = {
       // Use placeholders or integrate real auth later
       username: settings.username || 'Player',
-      uuid: '00000000-0000-0000-0000-000000000000', // Placeholder UUID
-      accessToken: '0', // Placeholder token
-      userType: 'msa', // Placeholder type
+      uuid: settings.uuid || '00000000-0000-0000-0000-000000000000',
+      accessToken: settings.accessToken || '0',
+      userType: settings.userType || UserType.OFFLINE,
+      xuid: settings.xuid || '',
     };
 
     // Determine Game Directory: Use setting if provided, otherwise default (e.g., userData)
@@ -545,7 +546,7 @@ export async function launchVersion(
       natives_directory: paths.nativesPath,
       launcher_name: 'LLauncher',
       launcher_version: app.getVersion(),
-      classpath: classpath, // Ensure classpath is calculated correctly
+      classpath: classpath,
       game_directory: gameDirectory,
       assets_root: paths.assetsPath,
       assets_index_name: versionDetails.assetIndex.id,

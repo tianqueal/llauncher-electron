@@ -6,6 +6,7 @@ export interface SettingFieldValidation {
 
 export enum SettingFieldType {
   TEXT = 'text',
+  PASSWORD = 'password',
   NUMBER = 'number',
   SELECT = 'select',
   TEXTAREA = 'textarea',
@@ -18,7 +19,7 @@ export interface SettingFieldConfig {
   label: string;
   description: string;
   type: SettingFieldType;
-  options?: Array<string>;
+  options?: Array<{ label: string; value: string | number }>;
   placeholder?: string;
   required?: boolean;
   validation?: SettingFieldValidation;

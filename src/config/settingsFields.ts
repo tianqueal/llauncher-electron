@@ -1,3 +1,4 @@
+import { UserType } from '../types/UserType';
 import {
   SettingFieldConfig,
   SettingFieldType,
@@ -98,4 +99,40 @@ export const settingsFields: Array<SettingFieldConfig> = [
     type: SettingFieldType.SWITCH,
     required: false,
   },
+  // --- Authentication Fields ---
+  {
+    id: 'accessToken',
+    label: 'Access Token',
+    description:
+      'Authentication token for online play (leave blank for offline)',
+    type: SettingFieldType.PASSWORD,
+    required: false,
+  },
+  {
+    id: 'uuid',
+    label: 'UUID',
+    description:
+      'Player Universally Unique Identifier (from auth service or generated for offline)',
+    type: SettingFieldType.TEXT,
+    required: false,
+  },
+  {
+    id: 'xuid',
+    label: 'XUID (Xbox User ID)',
+    description: 'Xbox User ID, obtained from Microsoft Account authentication',
+    type: SettingFieldType.TEXT,
+    required: false,
+  },
+  {
+    id: 'userType',
+    label: 'User Type',
+    description: 'Type of account',
+    type: SettingFieldType.SELECT,
+    options: Object.values(UserType).map((type) => ({
+      label: type,
+      value: type,
+    })),
+    required: false,
+  },
+  // --- End Authentication Fields ---
 ];
