@@ -1,15 +1,8 @@
 import Container from '../components/Container';
-import { version } from '../../package.json'; // Import version from package.json
+import { productName, description, author, version } from '../../package.json';
 import { motion } from 'motion/react';
 
 export default function AboutView() {
-  const author = {
-    name: 'Liansky',
-    githubUsername: 'tianqueal',
-    githubUrl: 'https://github.com/tianqueal',
-    avatarUrl: 'https://github.com/tianqueal.png',
-  };
-
   const handleExternalLinkClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
     url: string,
@@ -26,16 +19,12 @@ export default function AboutView() {
         <h2 className="mb-6 text-xl font-semibold">
           {' '}
           {/* Centered title */}
-          About LLauncher
+          About {productName}
         </h2>
         <div className="space-y-4 dark:text-white/80">
           {' '}
           {/* Centered text */}
-          <p>
-            LLauncher is a open&#45;source custom runner designed to provide a
-            simple and efficient way to manage and play your favourite game
-            version.
-          </p>
+          <p>{description}</p>
           <p>Built with Electron, React, TypeScript, and Tailwind CSS.</p>
           <p>
             Current Version:{' '}
@@ -49,11 +38,11 @@ export default function AboutView() {
           {/* Added top border and center alignment */}
           <h3 className="mb-4 text-lg font-medium">Developed by</h3>
           <a
-            href={author.githubUrl}
-            onClick={(e) => handleExternalLinkClick(e, author.githubUrl)}
+            href={author.avatarUrl}
+            onClick={(e) => handleExternalLinkClick(e, author.url)}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex flex-col items-center" // Group for hover effect
+            className="group flex flex-col items-center"
           >
             <motion.img
               key="avatar"

@@ -1,8 +1,8 @@
 {
   "name": "llauncher-electron",
-  "productName": "LLauncher",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "productName": "LLauncher (Beta)",
+  "version": "1.0.0-beta.1",
+  "description": "LLauncher is a open-source custom runner designed to provide a simple and efficient way to manage and play your favourite game version.",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -17,7 +17,9 @@
   "author": {
     "name": "Christian Alvarado",
     "email": "tianqueal@gmail.com",
-    "url": "https://github.com/tianqueal"
+    "url": "https://github.com/tianqueal",
+    "avatarUrl": "https://github.com/tianqueal.png",
+    "githubUsername": "tianqueal"
   },
   "license": "MIT",
   "devDependencies": {
