@@ -5,10 +5,10 @@ import {
   Input,
   Switch,
   Textarea,
-} from '@headlessui/react'
-import clsx from 'clsx'
-import { SettingsFieldProps } from '../types/SettingsFieldProps'
-import { SettingFieldType } from '../types/SettingFieldConfig'
+} from '@headlessui/react';
+import clsx from 'clsx';
+import { SettingsFieldProps } from '../types/SettingsFieldProps';
+import { SettingFieldType } from '../types/SettingFieldConfig';
 
 export default function SettingsField({
   config,
@@ -16,7 +16,7 @@ export default function SettingsField({
   onChange,
   error, // Add error prop
 }: SettingsFieldProps & { error?: string | null }) {
-  const { id, label, description, type, validation } = config
+  const { id, label, description, type, validation } = config;
 
   const commonInputClasses = clsx(
     'mt-1 block w-full rounded-lg border-none dark:bg-white/5 py-1.5 px-3 text-sm/6',
@@ -27,8 +27,8 @@ export default function SettingsField({
     // Error state: add red ring
     error && 'ring-1 ring-red-500 dark:ring-red-600',
     // Error + Focus state: ensure error ring color persists/overrides focus color
-    error && 'data-focus:ring-red-500 dark:data-focus:ring-red-600'
-  )
+    error && 'data-focus:ring-red-500 dark:data-focus:ring-red-600',
+  );
 
   const renderInput = () => {
     switch (type) {
@@ -42,7 +42,7 @@ export default function SettingsField({
             onChange={(e) => onChange(id, e.target.value)}
             className={commonInputClasses}
           />
-        )
+        );
       case SettingFieldType.NUMBER:
         return (
           <Input
@@ -53,14 +53,14 @@ export default function SettingsField({
             onChange={(e) =>
               onChange(
                 id,
-                e.target.value === '' ? '' : Number(e.target.value) // Keep empty string or convert to number
+                e.target.value === '' ? '' : Number(e.target.value), // Keep empty string or convert to number
               )
             }
             min={validation?.min}
             max={validation?.max}
             className={commonInputClasses}
           />
-        )
+        );
       case SettingFieldType.SWITCH:
         return (
           <Switch
@@ -69,19 +69,19 @@ export default function SettingsField({
             checked={value as boolean}
             onChange={(checked) => onChange(id, checked)}
             className={clsx(
-              'group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-600 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
-              'data-checked:bg-indigo-600'
+              'group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-600 transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-900',
+              'data-checked:bg-indigo-600',
             )}
           >
             <span
               aria-hidden="true"
               className={clsx(
                 'pointer-events-none inline-block size-5 translate-x-0 rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                'group-data-checked:translate-x-5'
+                'group-data-checked:translate-x-5',
               )}
             />
           </Switch>
-        )
+        );
       case SettingFieldType.TEXTAREA:
         return (
           <Textarea
@@ -92,14 +92,14 @@ export default function SettingsField({
             rows={3} // Default rows, adjust as needed
             className={clsx(commonInputClasses, 'resize-none')} // Allow vertical resize
           />
-        )
+        );
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
-    <Field className="flex flex-col h-full">
+    <Field className="flex h-full flex-col">
       {' '}
       {/* Ensure vertical layout */}
       <div className="flex items-center justify-between">
@@ -109,7 +109,7 @@ export default function SettingsField({
         {type === SettingFieldType.SWITCH && renderInput()}
       </div>
       {description && (
-        <Description className="text-sm/6 dark:text-white/50 flex-1">
+        <Description className="flex-1 text-sm/6 dark:text-white/50">
           {description}
         </Description>
       )}
@@ -117,14 +117,14 @@ export default function SettingsField({
       {/* Display error message or reserve space */}
       <p
         className={clsx(
-          'mt-1 text-xs h-4', // Add fixed height (h-4 is usually enough for text-xs)
+          'mt-1 h-4 text-xs', // Add fixed height (h-4 is usually enough for text-xs)
           error
             ? 'text-red-500 dark:text-red-400' // Apply color only if error exists
-            : 'text-transparent' // Make text transparent if no error
+            : 'text-transparent', // Make text transparent if no error
         )}
       >
         {error || '\u00A0'} {/* Render error or non-breaking space */}
       </p>
     </Field>
-  )
+  );
 }

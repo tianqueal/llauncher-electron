@@ -1,4 +1,4 @@
-import clsx from 'clsx'
+import clsx from 'clsx';
 
 /**
  * Simple loading spinner component.
@@ -9,8 +9,8 @@ export default function Spinner({ className }: { className?: string }) {
       <svg
         aria-hidden="true"
         className={clsx(
-          'w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600',
-          className
+          'h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600',
+          className,
         )}
         viewBox="0 0 100 101"
         fill="none"
@@ -27,5 +27,5 @@ export default function Spinner({ className }: { className?: string }) {
       </svg>
       <span className="sr-only">Loading...</span>
     </div>
-  )
+  );
 }

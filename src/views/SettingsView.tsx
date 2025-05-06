@@ -1,19 +1,19 @@
-import { Fieldset, Legend } from '@headlessui/react'
-import clsx from 'clsx'
-import SettingsField from '../components/SettingField'
-import Spinner from '../components/Spinner'
-import { CheckIcon } from '@heroicons/react/20/solid'
-import { useSettings } from '../hooks/useSettings'
-import { settingsFields } from '../config/settingsFields'
-import FormButton from '../components/FormButton' // Import FormButtonProps
-import LoadingOverlay from '../components/LoadingOverlay'
-import { ReactNode } from 'react'
-import { FormButtonProps } from '../types/FormButtonProps'
-import Dialog from '../components/Dialog'
+import { Fieldset, Legend } from '@headlessui/react';
+import clsx from 'clsx';
+import SettingsField from '../components/SettingField';
+import Spinner from '../components/Spinner';
+import { CheckIcon } from '@heroicons/react/20/solid';
+import { useSettings } from '../hooks/useSettings';
+import { settingsFields } from '../config/settingsFields';
+import FormButton from '../components/FormButton'; // Import FormButtonProps
+import LoadingOverlay from '../components/LoadingOverlay';
+import { ReactNode } from 'react';
+import { FormButtonProps } from '../types/FormButtonProps';
+import Dialog from '../components/Dialog';
 
 // --- Local Sub-component for Action Buttons ---
 interface SettingsActionButtonProps extends FormButtonProps {
-  children: ReactNode // Button text
+  children: ReactNode; // Button text
 }
 
 function SettingsActionButton({
@@ -24,12 +24,12 @@ function SettingsActionButton({
 }: SettingsActionButtonProps) {
   return (
     <FormButton isLoading={isLoading} isSuccess={isSuccess} {...rest}>
-      <div className="relative flex items-center justify-center h-5">
+      <div className="relative flex h-5 items-center justify-center">
         {/* Spinner */}
         <span
           className={clsx(
             'absolute inset-0 flex items-center justify-center transition-opacity duration-200',
-            isLoading && !isSuccess ? 'opacity-100' : 'opacity-0'
+            isLoading && !isSuccess ? 'opacity-100' : 'opacity-0',
           )}
         >
           <Spinner />
@@ -38,7 +38,7 @@ function SettingsActionButton({
         <span
           className={clsx(
             'absolute inset-0 flex items-center justify-center transition-opacity duration-200',
-            isSuccess ? 'opacity-100' : 'opacity-0'
+            isSuccess ? 'opacity-100' : 'opacity-0',
           )}
         >
           <CheckIcon className="size-5" />
@@ -47,14 +47,14 @@ function SettingsActionButton({
         <span
           className={clsx(
             'transition-opacity duration-200',
-            isLoading || isSuccess ? 'opacity-0' : 'opacity-100'
+            isLoading || isSuccess ? 'opacity-0' : 'opacity-100',
           )}
         >
           {children}
         </span>
       </div>
     </FormButton>
-  )
+  );
 }
 
 // --- Main SettingsView Component ---
@@ -71,10 +71,10 @@ export default function SettingsView() {
     handleChange,
     handleSave,
     handleReset,
-  } = useSettings()
+  } = useSettings();
 
   return (
-    <div className="w-full flex justify-center relative max-w-4xl">
+    <div className="relative flex w-full max-w-4xl justify-center">
       <LoadingOverlay isLoading={isLoading} />
 
       {/* Display general save error if present */}
@@ -86,7 +86,7 @@ export default function SettingsView() {
           onClose={() => {
             /* Optionally clear the general error here if needed */
           }}
-          className="fixed bottom-5 right-5 z-30" // Adjust position as needed
+          className="fixed right-5 bottom-5 z-30" // Adjust position as needed
         />
       )}
 
@@ -95,18 +95,18 @@ export default function SettingsView() {
         className={clsx(
           'w-full transition-opacity duration-300',
           // Dim if initial loading OR if saving/resetting is in progress
-          (isLoading || isSaving) && 'opacity-50 pointer-events-none'
+          (isLoading || isSaving) && 'pointer-events-none opacity-50',
         )}
         aria-busy={isLoading || isSaving}
       >
         <Fieldset
           disabled={isLoading || isSaving} // Disable fieldset during initial load or save/reset
-          className="space-y-6 rounded-xl dark:bg-white/5 p-6 sm:p-10"
+          className="space-y-6 rounded-xl p-6 sm:p-10 dark:bg-white/5"
         >
           {/* ... Legend and Section ... */}
           <Legend className="text-xl font-semibold">Runner Settings</Legend>
 
-          <section className="space-y-6 md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <section className="gap-8 space-y-6 md:grid md:grid-cols-2 lg:grid-cols-3">
             {/* ... settingsFields.map ... */}
             {settingsFields.map((fieldConfig) => (
               <SettingsField
@@ -119,7 +119,7 @@ export default function SettingsView() {
             ))}
           </section>
 
-          <div className="flex justify-end gap-4 mt-6">
+          <div className="mt-6 flex justify-end gap-4">
             {/* Use SettingsActionButton for Reset */}
             <SettingsActionButton
               type="button"
@@ -151,5 +151,5 @@ export default function SettingsView() {
         </Fieldset>
       </form>
     </div>
-  )
+  );
 }

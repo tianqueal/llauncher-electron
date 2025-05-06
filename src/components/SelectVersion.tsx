@@ -4,35 +4,37 @@ import {
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
-} from '@headlessui/react'
+} from '@headlessui/react';
 import {
   ArrowDownTrayIcon,
   CheckIcon,
   ChevronDownIcon,
-} from '@heroicons/react/20/solid'
-import clsx from 'clsx'
-import { useState } from 'react'
-import { VersionOption } from '../types/VersionOption'
-import FormButton from './FormButton'
+} from '@heroicons/react/20/solid';
+import clsx from 'clsx';
+import { useState } from 'react';
+import { VersionOption } from '../types/VersionOption';
+import FormButton from './FormButton';
 
 export default function SelectVersion({
   versionOptions,
   handleInstall,
   disabled = false,
 }: {
-  versionOptions: Array<VersionOption>
-  handleInstall: (versionOption: VersionOption) => void
-  disabled?: boolean
+  versionOptions: Array<VersionOption>;
+  handleInstall: (versionOption: VersionOption) => void;
+  disabled?: boolean;
 }) {
-  const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState(null)
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState(null);
 
   const filteredVersionOptions =
     query === ''
       ? versionOptions
       : versionOptions.filter((versionOption) => {
-          return versionOption.label.toLowerCase().includes(query.toLowerCase())
-        })
+          return versionOption.label
+            .toLowerCase()
+            .includes(query.toLowerCase());
+        });
 
   return (
     <section className="flex items-center gap-2">
@@ -45,8 +47,8 @@ export default function SelectVersion({
         <div className="relative">
           <ComboboxInput<VersionOption>
             className={clsx(
-              'w-full rounded-lg border-none dark:bg-white/5 py-1.5 pr-8 pl-3 text-sm/6',
-              'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 dark:data-focus:outline-white/25'
+              'w-full rounded-lg border-none py-1.5 pr-8 pl-3 text-sm/6 dark:bg-white/5',
+              'focus:not-data-focus:outline-none data-focus:outline-2 data-focus:-outline-offset-2 dark:data-focus:outline-white/25',
             )}
             displayValue={(versionOption) => versionOption?.label}
             placeholder="Install another version..."
@@ -61,8 +63,8 @@ export default function SelectVersion({
           anchor="bottom"
           transition
           className={clsx(
-            'w-(--input-width) rounded-xl border dark:border-white/5 dark:bg-white/5 p-1 [--anchor-gap:--spacing(1)] empty:invisible',
-            'transition duration-100 ease-in data-leave:data-closed:opacity-0 backdrop-blur-sm'
+            'w-(--input-width) rounded-xl border p-1 [--anchor-gap:--spacing(1)] empty:invisible dark:border-white/5 dark:bg-white/5',
+            'backdrop-blur-sm transition duration-100 ease-in data-leave:data-closed:opacity-0',
           )}
         >
           {filteredVersionOptions.map((versionOption) => (
@@ -88,5 +90,5 @@ export default function SelectVersion({
         <span className="sr-only">Install New Version</span>
       </FormButton>
     </section>
-  )
+  );
 }

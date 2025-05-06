@@ -1,13 +1,13 @@
-import { Button, ButtonProps } from '@headlessui/react'
-import clsx from 'clsx'
-import { LaunchStatus } from '../types/LaunchStatus'
+import { Button, ButtonProps } from '@headlessui/react';
+import clsx from 'clsx';
+import { LaunchStatus } from '../types/LaunchStatus';
 
 interface PlayButtonProps extends ButtonProps {
-  isLoading?: boolean
-  className?: string
-  launchStatus: LaunchStatus
-  onClickPlay?: () => void
-  onClickStop?: () => void
+  isLoading?: boolean;
+  className?: string;
+  launchStatus: LaunchStatus;
+  onClickPlay?: () => void;
+  onClickStop?: () => void;
 }
 
 export default function PlayButton({
@@ -34,31 +34,31 @@ export default function PlayButton({
     ),
     downloading: clsx(
       'dark:focus:ring-offset-gray-800 dark:focus:ring-blue-500',
-      'dark:bg-blue-900'
+      'dark:bg-blue-900',
     ),
-  }
+  };
 
   const isPlayButton =
     launchStatus !== LaunchStatus.RUNNING &&
-    launchStatus !== LaunchStatus.LAUNCHING
+    launchStatus !== LaunchStatus.LAUNCHING;
 
   return (
     <Button
       disabled={disabled || isLoading}
       className={clsx(
         'w-full',
-        'cursor-pointer disabled:cursor-not-allowed inline-flex items-center justify-center rounded-lg px-2 py-1 text-lg font-bold shadow-lg disabled:bg-gray-900/50 disabled:hover:bg-gray-900/50',
-        'focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'inline-flex cursor-pointer items-center justify-center rounded-lg px-2 py-1 text-lg font-bold shadow-lg disabled:cursor-not-allowed disabled:bg-gray-900/50 disabled:hover:bg-gray-900/50',
+        'focus:ring-2 focus:ring-offset-2 focus:outline-none',
         'transition-all duration-300 ease-in-out',
         isPlayButton ? variantStyles.play : variantStyles.stop,
-        className
+        className,
       )}
       onClick={isPlayButton ? onClickPlay : onClickStop}
       {...props}
     >
       {isPlayButton ? 'Play!' : 'Stop!'}
     </Button>
-  )
+  );
   // const bgUrl =
   //   'https://upload.wikimedia.org/wikipedia/commons/1/10/Userbox_creeper.svg'
 

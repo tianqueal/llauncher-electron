@@ -5,15 +5,15 @@
  * @returns A formatted error message string.
  */
 export function getErrorMessage(error: unknown, context?: string): string {
-  const prefix = context ? `${context}: ` : ''
-  let message: string
+  const prefix = context ? `${context}: ` : '';
+  let message: string;
 
   if (error instanceof Error) {
     // Standard Error object
-    message = error.message
+    message = error.message;
   } else if (typeof error === 'string') {
     // Simple string error
-    message = error
+    message = error;
   } else if (
     error &&
     typeof error === 'object' &&
@@ -21,14 +21,14 @@ export function getErrorMessage(error: unknown, context?: string): string {
     typeof error.message === 'string'
   ) {
     // Duck-typing for objects with a message property
-    message = error.message
+    message = error.message;
   } else {
     // Fallback for other types
     try {
-      message = JSON.stringify(error)
+      message = JSON.stringify(error);
     } catch {
-      message = 'An unknown error occurred'
+      message = 'An unknown error occurred';
     }
   }
-  return `${prefix}${message}`
+  return `${prefix}${message}`;
 }

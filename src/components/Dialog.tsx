@@ -1,16 +1,16 @@
-import { XMarkIcon } from '@heroicons/react/20/solid'
-import clsx from 'clsx' // Import clsx
+import { XMarkIcon } from '@heroicons/react/20/solid';
+import clsx from 'clsx'; // Import clsx
 
 // Define the possible variants
-type DialogVariant = 'info' | 'warning' | 'error' | 'success'
+type DialogVariant = 'info' | 'warning' | 'error' | 'success';
 
 // Define the component props
 interface DialogProps {
-  title: string
-  description: string
-  onClose: () => void
-  variant?: DialogVariant // Add variant prop
-  className?: string // Allow passing custom classes
+  title: string;
+  description: string;
+  onClose: () => void;
+  variant?: DialogVariant; // Add variant prop
+  className?: string; // Allow passing custom classes
   // onConfirm?: () => void // Keep for future use if needed
 }
 
@@ -22,7 +22,7 @@ export default function Dialog({
   className,
 }: DialogProps) {
   // Base styles for the dialog container
-  const baseStyles = 'w-full max-w-xs rounded-xl border p-4 text-sm' // Adjusted padding and size
+  const baseStyles = 'w-full max-w-xs rounded-xl border p-4 text-sm'; // Adjusted padding and size
 
   // Variant-specific styles (dark mode focused)
   const variantStyles = {
@@ -32,7 +32,7 @@ export default function Dialog({
     error: 'dark:bg-red-900/70 dark:border-red-700/50 dark:text-red-100',
     success:
       'dark:bg-green-900/70 dark:border-green-700/50 dark:text-green-100',
-  }
+  };
 
   // Variant-specific styles for the title
   const titleStyles = {
@@ -40,7 +40,7 @@ export default function Dialog({
     warning: 'dark:text-yellow-100 font-semibold',
     error: 'dark:text-red-100 font-semibold',
     success: 'dark:text-green-100 font-semibold',
-  }
+  };
 
   // Variant-specific styles for the description text
   const descriptionStyles = {
@@ -48,7 +48,7 @@ export default function Dialog({
     warning: 'dark:text-yellow-100/80',
     error: 'dark:text-red-100/80',
     success: 'dark:text-green-100/80',
-  }
+  };
 
   // Variant-specific styles for the close button icon
   const closeIconStyles = {
@@ -56,14 +56,14 @@ export default function Dialog({
     warning: 'dark:text-yellow-100/50 dark:hover:text-yellow-100',
     error: 'dark:text-red-100/50 dark:hover:text-red-100',
     success: 'dark:text-green-100/50 dark:hover:text-green-100',
-  }
+  };
 
   return (
     <div
       className={clsx(
         baseStyles,
         variantStyles[variant], // Apply variant background/border/base text
-        className // Apply custom classes passed via props
+        className, // Apply custom classes passed via props
       )}
       role="alertdialog" // Improve accessibility role
       aria-labelledby="dialog-title"
@@ -74,9 +74,9 @@ export default function Dialog({
         type="button"
         onClick={onClose}
         className={clsx(
-          'absolute top-2 right-2 rounded p-1 transition-colors cursor-pointer',
-          'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white/50', // Basic focus style
-          closeIconStyles[variant] // Apply variant-specific icon color
+          'absolute top-2 right-2 cursor-pointer rounded p-1 transition-colors',
+          'focus:ring-2 focus:ring-white/50 focus:outline-none focus:ring-inset', // Basic focus style
+          closeIconStyles[variant], // Apply variant-specific icon color
         )}
         aria-label="Close" // Accessibility label
       >
@@ -105,5 +105,5 @@ export default function Dialog({
         <FormButton variant="primary" onClick={onConfirm}>Confirm</FormButton>
       </div> */}
     </div>
-  )
+  );
 }

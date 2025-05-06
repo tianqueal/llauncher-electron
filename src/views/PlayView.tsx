@@ -1,20 +1,20 @@
-import { Field, Fieldset, Legend } from '@headlessui/react'
-import clsx from 'clsx'
-import { useState, useEffect, useMemo } from 'react'
-import Card from '../components/Card'
-import { useVersionManifest } from '../hooks/useVersionManifest'
-import Dialog from '../components/Dialog'
-import VersionImage from '../components/VersionImage'
-import PlayButton from '../components/PlayButton'
-import { useLocalVersions } from '../hooks/useLocalVersions'
-import { useVersionDetails } from '../hooks/useVersionDetails'
-import { LaunchStatus } from '../types/LaunchStatus'
-import { VersionType } from '../types/VersionManifest'
-import PlaySelectVersion from '../components/PlaySelectVersion'
-import { useLaunchManager } from '../hooks/useLaunchManager'
-import LaunchProgressDisplay from '../components/LaunchProgressDisplay'
-import { useSettings } from '../hooks/useSettings'
-import LoadingOverlay from '../components/LoadingOverlay'
+import { Field, Fieldset, Legend } from '@headlessui/react';
+import clsx from 'clsx';
+import { useState, useEffect, useMemo } from 'react';
+import Card from '../components/Card';
+import { useVersionManifest } from '../hooks/useVersionManifest';
+import Dialog from '../components/Dialog';
+import VersionImage from '../components/VersionImage';
+import PlayButton from '../components/PlayButton';
+import { useLocalVersions } from '../hooks/useLocalVersions';
+import { useVersionDetails } from '../hooks/useVersionDetails';
+import { LaunchStatus } from '../types/LaunchStatus';
+import { VersionType } from '../types/VersionManifest';
+import PlaySelectVersion from '../components/PlaySelectVersion';
+import { useLaunchManager } from '../hooks/useLaunchManager';
+import LaunchProgressDisplay from '../components/LaunchProgressDisplay';
+import { useSettings } from '../hooks/useSettings';
+import LoadingOverlay from '../components/LoadingOverlay';
 
 export default function PlayView() {
   // --- Hooks ---
@@ -24,16 +24,20 @@ export default function PlayView() {
     isLoading: isLoadingManifest,
     error: manifestError,
     clearError: clearManifestError,
-  } = useVersionManifest()
+  } = useVersionManifest();
 
   // --- Settings Hook ---
-  const { settings, handleChange, isLoading: isLoadingSettings } = useSettings()
+  const {
+    settings,
+    handleChange,
+    isLoading: isLoadingSettings,
+  } = useSettings();
 
   const { localVersions, isLoading: isLoadingLocalVersions } =
-    useLocalVersions()
+    useLocalVersions();
 
   // --- State ---
-  const [selectedVersion, setSelectedVersion] = useState<string>('')
+  const [selectedVersion, setSelectedVersion] = useState<string>('');
 
   // --- Hook for Version Details ---
   const {
@@ -41,7 +45,7 @@ export default function PlayView() {
     isLoading: isLoadingDetails, // Rename isLoading
     error: detailsError, // Rename error
     clearError: clearDetailsError, // Rename clearError
-  } = useVersionDetails(selectedVersion)
+  } = useVersionDetails(selectedVersion);
 
   // --- Hook for Launch Logic ---
   const {
@@ -54,38 +58,38 @@ export default function PlayView() {
     handlePlay,
     handleKill,
     clearLaunchError,
-  } = useLaunchManager()
+  } = useLaunchManager();
 
   // Combine loading states specifically for the version options/selection logic
-  const isLoadingOptions = isLoadingManifest || isLoadingLocalVersions
+  const isLoadingOptions = isLoadingManifest || isLoadingLocalVersions;
   const isLoadingAnything =
     isLoadingOptions ||
     isLoadingDetails ||
     isLoadingSettings ||
     launchStatus === LaunchStatus.PREPARING ||
     launchStatus === LaunchStatus.DOWNLOADING ||
-    launchStatus === LaunchStatus.LAUNCHING
+    launchStatus === LaunchStatus.LAUNCHING;
 
   // Combine error states
   const error =
     manifestError ||
     detailsError ||
-    (launchStatus === LaunchStatus.ERROR ? launchMessage : null)
+    (launchStatus === LaunchStatus.ERROR ? launchMessage : null);
 
   const clearError = () => {
-    if (manifestError) clearManifestError()
-    if (detailsError) clearDetailsError()
-    if (launchStatus === LaunchStatus.ERROR) clearLaunchError()
-  }
+    if (manifestError) clearManifestError();
+    if (detailsError) clearDetailsError();
+    if (launchStatus === LaunchStatus.ERROR) clearLaunchError();
+  };
 
   // --- Effects ---
   // Set default selected version from manifest
   useEffect(() => {
     if (!selectedVersion && !isLoadingOptions && !isLoadingSettings) {
       const initialVersion =
-        settings.lastSelectedVersion || latestReleaseId || ''
-      setSelectedVersion(initialVersion)
-      console.log('PlayView: Default version set to', latestReleaseId)
+        settings.lastSelectedVersion || latestReleaseId || '';
+      setSelectedVersion(initialVersion);
+      console.log('PlayView: Default version set to', latestReleaseId);
     }
   }, [
     selectedVersion,
@@ -93,7 +97,7 @@ export default function PlayView() {
     latestReleaseId,
     isLoadingOptions,
     isLoadingSettings,
-  ])
+  ]);
 
   // Save selected version to settings when it changes
   useEffect(() => {
@@ -103,9 +107,9 @@ export default function PlayView() {
       if (selectedVersion !== settings.lastSelectedVersion) {
         console.log(
           'PlayView: Saving selected version to settings:',
-          selectedVersion
-        )
-        handleChange('lastSelectedVersion', selectedVersion)
+          selectedVersion,
+        );
+        handleChange('lastSelectedVersion', selectedVersion);
       }
     }
     // Dependencies: Run when selection changes or loading finishes
@@ -115,7 +119,7 @@ export default function PlayView() {
     isLoadingSettings,
     handleChange,
     settings.lastSelectedVersion,
-  ])
+  ]);
 
   // // Log details when they load
   // useEffect(() => {
@@ -131,21 +135,21 @@ export default function PlayView() {
 
   // --- Version Options Grouped ---
   const versionOptionsGrouped = useMemo(() => {
-    console.log('Recalculating grouped version options...')
+    console.log('Recalculating grouped version options...');
     // Define structure for groups
     const groups: Array<{
-      label: string
-      options: Array<{ value: string; label: string }>
-    }> = []
-    const processedIds = new Set<string>() // Track IDs added to prevent duplicates
+      label: string;
+      options: Array<{ value: string; label: string }>;
+    }> = [];
+    const processedIds = new Set<string>(); // Track IDs added to prevent duplicates
 
     // 1. Latest Group (if available)
     if (latestReleaseId) {
       groups.push({
         label: 'Latest Release',
         options: [{ value: latestReleaseId, label: latestReleaseId }], // Simple label for latest
-      })
-      processedIds.add(latestReleaseId)
+      });
+      processedIds.add(latestReleaseId);
     }
 
     // 2. Local (Installed) Group
@@ -154,21 +158,21 @@ export default function PlayView() {
       .map((version) => ({
         value: version.id,
         label: version.name, // Use the name from localVersions
-      }))
+      }));
 
     if (localOptions.length > 0) {
-      groups.push({ label: 'Other Installed Versions', options: localOptions })
-      localOptions.forEach((opt) => processedIds.add(opt.value)) // Mark these as processed
+      groups.push({ label: 'Other Installed Versions', options: localOptions });
+      localOptions.forEach((opt) => processedIds.add(opt.value)); // Mark these as processed
     }
 
     // 3. Remote (Available Releases) Group
     // Fetch a decent number initially, then filter and slice
     const remoteOptionsRaw = getFilteredVersionOptions([
       VersionType.Release,
-    ]).slice(0, 20)
+    ]).slice(0, 20);
     const availableRemoteOptions = remoteOptionsRaw.filter(
-      (option) => !processedIds.has(option.value)
-    ) // Exclude if already processed (latest or local)
+      (option) => !processedIds.has(option.value),
+    ); // Exclude if already processed (latest or local)
     // .slice(0, 10) // Limit the number shown in 'Available'
 
     if (availableRemoteOptions.length > 0) {
@@ -179,47 +183,47 @@ export default function PlayView() {
           value: opt.value,
           label: opt.label,
         })),
-      })
+      });
     }
 
     // Calculate total count across all groups
-    const total = groups.reduce((sum, group) => sum + group.options.length, 0)
+    const total = groups.reduce((sum, group) => sum + group.options.length, 0);
 
-    return { groups, total }
-  }, [localVersions, latestReleaseId, getFilteredVersionOptions])
+    return { groups, total };
+  }, [localVersions, latestReleaseId, getFilteredVersionOptions]);
 
   // Calculate overall download progress based on files processed
   const overallProgress = useMemo(() => {
-    if (totalFilesToDownload <= 0) return 0 // Prevent division by zero or negative totals
+    if (totalFilesToDownload <= 0) return 0; // Prevent division by zero or negative totals
     const progress = Math.round(
-      (processedFilesCount / totalFilesToDownload) * 100
-    )
+      (processedFilesCount / totalFilesToDownload) * 100,
+    );
     // Clamp the value between 0 and 100 to prevent overflow
-    return Math.min(100, Math.max(0, progress))
-  }, [processedFilesCount, totalFilesToDownload])
+    return Math.min(100, Math.max(0, progress));
+  }, [processedFilesCount, totalFilesToDownload]);
 
   // Calculate total downloaded size (approximate)
   const totalDownloadedMB = useMemo(() => {
     const bytes = Object.values(downloadProgress).reduce(
       (sum, file) => sum + (file.downloadedBytes || 0),
-      0
-    )
-    return (bytes / (1024 * 1024)).toFixed(1)
-  }, [downloadProgress])
+      0,
+    );
+    return (bytes / (1024 * 1024)).toFixed(1);
+  }, [downloadProgress]);
 
   // Calculate total size (approximate, only counts files with known size)
   const totalSizeMB = useMemo(() => {
     const bytes = Object.values(downloadProgress).reduce(
       (sum, file) => sum + (file.totalBytes || 0),
-      0
-    )
+      0,
+    );
     // Estimate total based on known files if not all reported yet
     // This is tricky, maybe just show total of files *seen* so far
-    return (bytes / (1024 * 1024)).toFixed(1)
-  }, [downloadProgress])
+    return (bytes / (1024 * 1024)).toFixed(1);
+  }, [downloadProgress]);
 
   return (
-    <div className="w-full grid gap-4 grid-cols-1 md:grid-cols-2 max-w-4xl relative">
+    <div className="relative grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
       <VersionImage selectedVersion={selectedVersion} />
 
       {/* Error Dialog - uses combined error state */}
@@ -230,7 +234,7 @@ export default function PlayView() {
           title="Error"
           description={error}
           onClose={clearError}
-          className="fixed bottom-5 right-5 z-30"
+          className="fixed right-5 bottom-5 z-30"
         />
       )}
 
@@ -238,13 +242,13 @@ export default function PlayView() {
         className={clsx(
           'relative',
           (isLoadingOptions || isLoadingSettings) &&
-            'opacity-50 pointer-events-none'
+            'pointer-events-none opacity-50',
         )}
       >
         {(isLoadingOptions || isLoadingSettings) && (
           <LoadingOverlay isLoading={isLoadingAnything} />
         )}
-        <Fieldset className="flex flex-col gap-3 mb-2">
+        <Fieldset className="mb-2 flex flex-col gap-3">
           <Legend className="text-xl font-semibold">
             Select Version & Play
           </Legend>
@@ -256,7 +260,7 @@ export default function PlayView() {
             />
 
             {/* Display Required Java Version - Reserve space */}
-            <p className="text-xs text-white/60 mt-1 pl-1 h-4">
+            <p className="mt-1 h-4 pl-1 text-xs text-white/60">
               {' '}
               {
                 !isLoadingDetails && versionDetails?.javaVersion
@@ -305,5 +309,5 @@ export default function PlayView() {
         />
       </Card>
     </div>
-  )
+  );
 }

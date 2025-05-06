@@ -1,10 +1,10 @@
-import clsx from 'clsx'
-import Spinner from './Spinner'
+import clsx from 'clsx';
+import Spinner from './Spinner';
 
 interface LoadingOverlayProps {
-  isLoading: boolean
-  className?: string
-  spinnerClassName?: string
+  isLoading: boolean;
+  className?: string;
+  spinnerClassName?: string;
 }
 
 /**
@@ -17,19 +17,19 @@ export default function LoadingOverlay({
   spinnerClassName,
 }: LoadingOverlayProps) {
   if (!isLoading) {
-    return null
+    return null;
   }
 
   return (
     <div
       className={clsx(
-        'absolute inset-0 flex items-center justify-center z-20 dark:bg-black/30 backdrop-blur-sm rounded-xl',
-        className
+        'absolute inset-0 z-20 flex items-center justify-center rounded-xl backdrop-blur-sm dark:bg-black/30',
+        className,
       )}
       aria-busy="true"
       aria-live="polite" // Indicate loading state changes
     >
       <Spinner className={spinnerClassName} />
     </div>
-  )
+  );
 }

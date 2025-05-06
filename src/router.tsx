@@ -1,9 +1,9 @@
-import { createHashRouter } from 'react-router'
-import Layout from './layouts/Layout'
-import PlayView from './views/PlayView'
-import VersionsView from './views/VersionsView'
-import SettingsView from './views/SettingsView'
-import AboutView from './views/AboutView'
+import { createHashRouter } from 'react-router';
+import Layout from './layouts/Layout';
+import PlayView from './views/PlayView';
+import VersionsView from './views/VersionsView';
+import SettingsView from './views/SettingsView';
+import AboutView from './views/AboutView';
 
 export const router = createHashRouter([
   {
@@ -28,4 +28,4 @@ export const router = createHashRouter([
       },
     ],
   },
-])
+]);

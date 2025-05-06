@@ -2,18 +2,18 @@
  * Defines the structure for the application settings.
  */
 export interface SettingsState {
-  username: string
-  memoryMinimum: number
-  memoryMaximum: number
-  javaPath: string
-  gameDirectory: string
-  resolutionWidth: number
-  resolutionHeight: number
-  keepLauncherOpen: boolean
-  jvmArguments: string
-  parallelDownloads: number
-  lastSelectedVersion?: string
-  [key: string]: string | number | boolean // Allow index signature for dynamic access
+  username: string;
+  memoryMinimum: number;
+  memoryMaximum: number;
+  javaPath: string;
+  gameDirectory: string;
+  resolutionWidth: number;
+  resolutionHeight: number;
+  keepLauncherOpen: boolean;
+  jvmArguments: string;
+  parallelDownloads: number;
+  lastSelectedVersion?: string;
+  [key: string]: string | number | boolean; // Allow index signature for dynamic access
 }
 
 /**
@@ -31,4 +31,4 @@ export const defaultSettings: SettingsState = {
   jvmArguments: '',
   parallelDownloads: 5,
   lastSelectedVersion: '',
-}
+};

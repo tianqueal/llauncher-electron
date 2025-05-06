@@ -1,110 +1,110 @@
-import { useState, useEffect, useCallback } from 'react'
-import { LocalVersion } from '../types/LocalVersion'
-import { compareVersions } from '../utils/versionUtils'
-import { getErrorMessage } from '../utils/errorUtils'
+import { useState, useEffect, useCallback } from 'react';
+import { LocalVersion } from '../types/LocalVersion';
+import { compareVersions } from '../utils/versionUtils';
+import { getErrorMessage } from '../utils/errorUtils';
 
 /**
  * Custom hook to manage the list of installed versions and related actions.
  */
 export function useLocalVersions() {
-  const [localVersions, setLocalVersions] = useState<Array<LocalVersion>>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [localVersions, setLocalVersions] = useState<Array<LocalVersion>>([]);
+  const [isLoading, setIsLoading] = useState(true);
   // Add state for potential errors during loading or actions
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
   // Add state for actions like deleting/installing if needed
-  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   // Effect to load versions on initial mount
   useEffect(() => {
-    console.log('useVersions: useEffect running, requesting version list.')
-    setIsLoading(true)
-    setError(null) // Reset error on new load attempt
+    console.log('useVersions: useEffect running, requesting version list.');
+    setIsLoading(true);
+    setError(null); // Reset error on new load attempt
 
     const fetchVersions = async () => {
       try {
-        const loadedVersions = await window.electron.listVersions()
-        console.log('useVersions: Received versions', loadedVersions)
+        const loadedVersions = await window.electron.listVersions();
+        console.log('useVersions: Received versions', loadedVersions);
         const sortedVersions = loadedVersions.sort((a, b) =>
-          compareVersions(b.id, a.id)
-        )
-        setLocalVersions(sortedVersions)
+          compareVersions(b.id, a.id),
+        );
+        setLocalVersions(sortedVersions);
       } catch (err: unknown) {
-        const errorMessage = getErrorMessage(err, 'Error loading versions')
-        console.error(`useVersions: ${errorMessage}`, err)
-        setError(errorMessage)
-        setLocalVersions([]) // Clear versions on error
+        const errorMessage = getErrorMessage(err, 'Error loading versions');
+        console.error(`useVersions: ${errorMessage}`, err);
+        setError(errorMessage);
+        setLocalVersions([]); // Clear versions on error
       } finally {
-        setIsLoading(false)
-        console.log('useVersions: isLoading set to false.')
+        setIsLoading(false);
+        console.log('useVersions: isLoading set to false.');
       }
-    }
+    };
 
-    fetchVersions()
-  }, []) // Empty dependency array ensures this runs only once
+    fetchVersions();
+  }, []); // Empty dependency array ensures this runs only once
 
   // Delete action
   const handleDelete = useCallback(
     async (id: string) => {
       // Prevent deleting if already deleting or loading initial list
-      if (isDeleting || isLoading) return
+      if (isDeleting || isLoading) return;
 
-      console.log(`useVersions: Requesting delete for version ${id}`)
-      setIsDeleting(id) // Set deleting state for this ID
-      setError(null) // Clear previous errors
+      console.log(`useVersions: Requesting delete for version ${id}`);
+      setIsDeleting(id); // Set deleting state for this ID
+      setError(null); // Clear previous errors
 
       // Store the version being deleted in case we need to revert
-      const versionToDelete = localVersions.find((v) => v.id === id)
+      const versionToDelete = localVersions.find((v) => v.id === id);
 
       // Optimistic update: remove immediately from UI
-      setLocalVersions((prev) => prev.filter((v) => v.id !== id))
+      setLocalVersions((prev) => prev.filter((v) => v.id !== id));
 
       try {
-        const result = await window.electron.deleteVersion(id)
+        const result = await window.electron.deleteVersion(id);
         if (!result.success) {
           // Deletion failed in main process, revert UI and show error
           console.error(
             `useVersions: Failed to delete version ${id}:`,
-            result.error
-          )
-          setError(result.error || `Failed to delete version ${id}`)
+            result.error,
+          );
+          setError(result.error || `Failed to delete version ${id}`);
           // Add the version back if it was found
           if (versionToDelete) {
             setLocalVersions((prev) =>
-              [...prev, versionToDelete].sort(/* Add sorting if needed */)
-            )
+              [...prev, versionToDelete].sort(/* Add sorting if needed */),
+            );
           }
         } else {
           // Deletion successful in main process, UI already updated
-          console.log(`useVersions: Successfully deleted version ${id}`)
+          console.log(`useVersions: Successfully deleted version ${id}`);
         }
       } catch (err: unknown) {
         // IPC error, revert UI and show error
         const errorMessage = getErrorMessage(
           err,
-          `IPC Error deleting version ${id}`
-        )
-        console.error(`useVersions: ${errorMessage}:`, err)
-        setError(errorMessage)
+          `IPC Error deleting version ${id}`,
+        );
+        console.error(`useVersions: ${errorMessage}:`, err);
+        setError(errorMessage);
         // Add the version back if it was found
         if (versionToDelete) {
           setLocalVersions((prev) =>
-            [...prev, versionToDelete].sort(/* Add sorting if needed */)
-          )
+            [...prev, versionToDelete].sort(/* Add sorting if needed */),
+          );
         }
       } finally {
-        setIsDeleting(null) // Clear deleting state regardless of outcome
+        setIsDeleting(null); // Clear deleting state regardless of outcome
       }
     },
-    [localVersions, isLoading, isDeleting]
-  )
+    [localVersions, isLoading, isDeleting],
+  );
 
   // Placeholder for reinstall/install action
   const handleReinstall = useCallback(async (id: string) => {
     // TODO: Implement IPC call to main process for reinstallation
-    console.log(`useVersions: Requesting reinstall for version ${id}`)
+    console.log(`useVersions: Requesting reinstall for version ${id}`);
     alert(
-      `Mock reinstall for version ${id}. Implement actual reinstall via IPC.`
-    )
+      `Mock reinstall for version ${id}. Implement actual reinstall via IPC.`,
+    );
     // try {
     //   setIsLoading(true); // Or a specific installing state
     //   await window.electron.reinstallVersion(id);
@@ -115,19 +115,19 @@ export function useLocalVersions() {
     // } finally {
     //    setIsLoading(false);
     // }
-  }, [])
+  }, []);
 
   // Placeholder for installing a new version
   const handleInstallNew = useCallback(async () => {
     // TODO: Implement logic to show install options / trigger install process via IPC
-    console.log('useVersions: Requesting install new version')
-    alert('Mock install new version. Implement actual install process.')
-  }, [])
+    console.log('useVersions: Requesting install new version');
+    alert('Mock install new version. Implement actual install process.');
+  }, []);
 
   // Function to clear the error state if needed externally
   const clearError = useCallback(() => {
-    setError(null)
-  }, [])
+    setError(null);
+  }, []);
 
   return {
     localVersions,
@@ -138,5 +138,5 @@ export function useLocalVersions() {
     handleDelete,
     handleReinstall,
     handleInstallNew,
-  }
+  };
 }

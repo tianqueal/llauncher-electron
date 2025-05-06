@@ -1,7 +1,7 @@
 import {
   SettingFieldConfig,
   SettingFieldType,
-} from '../types/SettingFieldConfig'
+} from '../types/SettingFieldConfig';
 
 /**
  * Array containing the configuration for each setting field in the SettingsView.
@@ -90,4 +90,4 @@ export const settingsFields: Array<SettingFieldConfig> = [
     type: SettingFieldType.SWITCH,
     required: false,
   },
-]
+];

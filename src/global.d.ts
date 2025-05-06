@@ -1,14 +1,14 @@
-import { IpcRendererEvent } from 'electron'
-import { SettingsState } from './config/settingsConfig'
-import { VersionManifest } from './types/VersionManifest'
-import { PatchNotes } from './types/PatchNotes'
-import { LocalVersion } from './types/LocalVersion'
-import { VersionDetails } from './types/VersionDetails'
+import { IpcRendererEvent } from 'electron';
+import { SettingsState } from './config/settingsConfig';
+import { VersionManifest } from './types/VersionManifest';
+import { PatchNotes } from './types/PatchNotes';
+import { LocalVersion } from './types/LocalVersion';
+import { VersionDetails } from './types/VersionDetails';
 import {
   DownloadProgressArgs,
   LaunchOutputArgs,
   LaunchStatusArgs,
-} from './types/IpcEvents'
+} from './types/IpcEvents';
 
 declare global {
   interface Window {
@@ -16,58 +16,58 @@ declare global {
       // Exposed constants
       constants: {
         // Add this object
-        patchNotesBaseUrl: string
-      }
+        patchNotesBaseUrl: string;
+      };
       // Theme
       onUpdateTheme: (
-        callback: (event: IpcRendererEvent, theme: string) => void
-      ) => void
+        callback: (event: IpcRendererEvent, theme: string) => void,
+      ) => void;
       saveSettings: (
-        settings: SettingsState
-      ) => Promise<{ success: boolean; error?: string }>
-      loadSettings: () => Promise<SettingsState>
+        settings: SettingsState,
+      ) => Promise<{ success: boolean; error?: string }>;
+      loadSettings: () => Promise<SettingsState>;
       // Versions
-      listVersions: () => Promise<Array<LocalVersion>>
+      listVersions: () => Promise<Array<LocalVersion>>;
       // Version Manifest
-      getVersionManifest: () => Promise<VersionManifest | null>
+      getVersionManifest: () => Promise<VersionManifest | null>;
       // Patch Notes
-      getPatchNotes: () => Promise<PatchNotes | null>
+      getPatchNotes: () => Promise<PatchNotes | null>;
       // getVersionDetails
-      getVersionDetails: (versionId: string) => Promise<VersionDetails | null>
+      getVersionDetails: (versionId: string) => Promise<VersionDetails | null>;
 
       // launch/kill methods
       launchVersion: (
-        versionId: string
-      ) => Promise<{ success: boolean; message?: string; error?: string }>
-      killGame: () => Promise<{ success: boolean; error?: string }>
+        versionId: string,
+      ) => Promise<{ success: boolean; message?: string; error?: string }>;
+      killGame: () => Promise<{ success: boolean; error?: string }>;
 
       // Version Management
       deleteVersion: (
-        versionId: string
-      ) => Promise<{ success: boolean; error?: string }>
+        versionId: string,
+      ) => Promise<{ success: boolean; error?: string }>;
       openDirectory: (
-        dirPath: string
-      ) => Promise<{ success: boolean; error?: string }>
+        dirPath: string,
+      ) => Promise<{ success: boolean; error?: string }>;
 
       openExternalLink: (
-        url: string
-      ) => Promise<{ success: boolean; error?: string }>
+        url: string,
+      ) => Promise<{ success: boolean; error?: string }>;
 
       // listeners
       onLaunchStatus: (
-        callback: (event: IpcRendererEvent, args: LaunchStatusArgs) => void
-      ) => void
+        callback: (event: IpcRendererEvent, args: LaunchStatusArgs) => void,
+      ) => void;
       onDownloadProgress: (
-        callback: (event: IpcRendererEvent, args: DownloadProgressArgs) => void
-      ) => void
+        callback: (event: IpcRendererEvent, args: DownloadProgressArgs) => void,
+      ) => void;
       onLaunchOutput: (
-        callback: (event: IpcRendererEvent, args: LaunchOutputArgs) => void
-      ) => void
+        callback: (event: IpcRendererEvent, args: LaunchOutputArgs) => void,
+      ) => void;
 
       // listener remover
-      removeAllListeners: (channel: string) => void
-    }
+      removeAllListeners: (channel: string) => void;
+    };
   }
 }
 
-export {}
+export {};

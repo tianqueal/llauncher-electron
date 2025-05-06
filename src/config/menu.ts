@@ -1,4 +1,4 @@
-import { app, Menu, MenuItemConstructorOptions } from 'electron'
+import { app, Menu, MenuItemConstructorOptions } from 'electron';
 
 export default function setMainMenu(/* menu: BrowserWindow */) {
   const template: Array<MenuItemConstructorOptions> = [
@@ -31,7 +31,7 @@ export default function setMainMenu(/* menu: BrowserWindow */) {
     // },
     { role: 'viewMenu' },
     { role: 'windowMenu' },
-  ]
+  ];
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

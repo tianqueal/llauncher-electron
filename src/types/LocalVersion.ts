@@ -1,9 +1,9 @@
 export interface LocalVersion {
-  id: string
-  name: string
-  status: LocalVersionStatus
-  path: string
-  sizeBytes?: number
+  id: string;
+  name: string;
+  status: LocalVersionStatus;
+  path: string;
+  sizeBytes?: number;
 }
 
 export enum LocalVersionStatus {

@@ -1,14 +1,14 @@
-import { LaunchStatus } from '../types/LaunchStatus'
+import { LaunchStatus } from '../types/LaunchStatus';
 
 interface LaunchProgressDisplayProps {
-  launchStatus: LaunchStatus
-  launchMessage: string
-  overallProgress: number
-  processedFilesCount: number
-  totalFilesToDownload: number
-  currentTaskLabel: string
-  totalDownloadedMB: string
-  totalSizeMB: string
+  launchStatus: LaunchStatus;
+  launchMessage: string;
+  overallProgress: number;
+  processedFilesCount: number;
+  totalFilesToDownload: number;
+  currentTaskLabel: string;
+  totalDownloadedMB: string;
+  totalSizeMB: string;
 }
 
 export default function LaunchProgressDisplay({
@@ -29,11 +29,11 @@ export default function LaunchProgressDisplay({
     launchStatus !== LaunchStatus.RUNNING &&
     launchStatus !== LaunchStatus.CLOSED
   ) {
-    return null
+    return null;
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-white/10 text-sm text-white/70 space-y-1">
+    <div className="mt-4 space-y-1 border-t border-white/10 pt-4 text-sm text-white/70">
       <p className="font-medium capitalize">
         {launchStatus === LaunchStatus.CLOSED
           ? `Game ${launchStatus}`
@@ -44,7 +44,7 @@ export default function LaunchProgressDisplay({
           ` (${processedFilesCount}/${totalFilesToDownload})`}
       </p>
       {/* Show specific message OR current task label */}
-      <p className="text-xs truncate h-4">
+      <p className="h-4 truncate text-xs">
         {' '}
         {/* Fixed height */}
         {launchMessage && launchStatus !== LaunchStatus.DOWNLOADING
@@ -54,18 +54,18 @@ export default function LaunchProgressDisplay({
       {/* Progress Bar */}
       {launchStatus === LaunchStatus.DOWNLOADING && (
         <>
-          <div className="w-full dark:bg-gray-700 rounded-full h-1.5 mt-1 overflow-hidden">
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full dark:bg-gray-700">
             <div
-              className="dark:bg-indigo-500 h-1.5 rounded-full transition-[width] duration-150 ease-in-out"
+              className="h-1.5 rounded-full transition-[width] duration-150 ease-in-out dark:bg-indigo-500"
               style={{ width: `${overallProgress}%` }}
             ></div>
           </div>
           {/* Optional: Show MB downloaded */}
-          <p className="text-xs text-right">
+          <p className="text-right text-xs">
             {totalDownloadedMB} MB / {totalSizeMB} MB
           </p>
         </>
       )}
     </div>
-  )
+  );
 }

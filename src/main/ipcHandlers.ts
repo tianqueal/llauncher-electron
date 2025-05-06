@@ -1,17 +1,17 @@
-import fs from 'node:fs'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import { loadSettings, saveSettings } from '../utils/settingsManager'
+import fs from 'node:fs';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { loadSettings, saveSettings } from '../utils/settingsManager';
 import {
   deleteVersion,
   getVersionDetails,
   listInstalledVersions,
-} from './versionsManager'
-import { readLocalManifest } from './manifestManager'
-import { SettingsState } from '../config/settingsConfig'
-import { readLocalPatchNotes } from './patchNotesManager'
-import path from 'node:path'
-import { killRunningProcess, launchVersion } from './launchManager'
-import { getErrorMessage } from '../utils/errorUtils'
+} from './versionsManager';
+import { readLocalManifest } from './manifestManager';
+import { SettingsState } from '../config/settingsConfig';
+import { readLocalPatchNotes } from './patchNotesManager';
+import path from 'node:path';
+import { killRunningProcess, launchVersion } from './launchManager';
+import { getErrorMessage } from '../utils/errorUtils';
 
 /**
  * Registers all IPC handlers for the main process.
@@ -26,88 +26,88 @@ export function registerIpcHandlers({
   manifestPath,
   patchNotesPath,
 }: {
-  settingsPath: string
-  versionsPath: string
-  manifestPath: string
-  patchNotesPath: string
+  settingsPath: string;
+  versionsPath: string;
+  manifestPath: string;
+  patchNotesPath: string;
 }): void {
-  console.log('Registering IPC handlers...')
+  console.log('Registering IPC handlers...');
 
   // --- Data Retrieval Handlers ---
   // Settings
   ipcMain.handle('load-settings', () => {
-    console.log('IPC: Handling load-settings')
-    return loadSettings(settingsPath)
-  })
+    console.log('IPC: Handling load-settings');
+    return loadSettings(settingsPath);
+  });
   ipcMain.handle('save-settings', (_event, settingsData: SettingsState) => {
-    console.log('IPC: Handling save-settings')
-    return saveSettings(settingsPath, settingsData)
-  })
+    console.log('IPC: Handling save-settings');
+    return saveSettings(settingsPath, settingsData);
+  });
 
   // Installed Versions
   ipcMain.handle('list-versions', async () => {
-    console.log('IPC: Handling list-versions')
-    return await listInstalledVersions(versionsPath)
-  })
+    console.log('IPC: Handling list-versions');
+    return await listInstalledVersions(versionsPath);
+  });
 
   // Version Manifest
   ipcMain.handle('get-version-manifest', () => {
-    console.log('IPC: Handling get-version-manifest')
-    return readLocalManifest(manifestPath)
-  })
+    console.log('IPC: Handling get-version-manifest');
+    return readLocalManifest(manifestPath);
+  });
 
   // Patch Notes
   ipcMain.handle('get-patch-notes', () => {
-    console.log('IPC: Handling get-patch-notes')
-    return readLocalPatchNotes(patchNotesPath)
-  })
+    console.log('IPC: Handling get-patch-notes');
+    return readLocalPatchNotes(patchNotesPath);
+  });
 
   // Version Details
   ipcMain.handle('get-version-details', async (_event, versionId: string) => {
-    console.log(`IPC: Handling get-version-details for ${versionId}`)
+    console.log(`IPC: Handling get-version-details for ${versionId}`);
     // Read the main manifest first to get the URL
-    const mainManifest = readLocalManifest(manifestPath)
+    const mainManifest = readLocalManifest(manifestPath);
     if (!mainManifest) {
       console.error(
-        'IPC: Could not read main manifest to get version details URL.'
-      )
-      return null // Or throw an error
+        'IPC: Could not read main manifest to get version details URL.',
+      );
+      return null; // Or throw an error
     }
-    return await getVersionDetails(versionId, versionsPath, mainManifest)
-  })
+    return await getVersionDetails(versionId, versionsPath, mainManifest);
+  });
 
   // --- Action Handlers ---
   ipcMain.handle('launch-version', async (event, versionId: string) => {
-    console.log(`IPC: Handling launch-version for ${versionId}`)
-    const mainWindow = BrowserWindow.fromWebContents(event.sender) // Get window to send feedback
+    console.log(`IPC: Handling launch-version for ${versionId}`);
+    const mainWindow = BrowserWindow.fromWebContents(event.sender); // Get window to send feedback
 
     try {
       // 1. Load Settings
-      const settings = await loadSettings(settingsPath)
+      const settings = await loadSettings(settingsPath);
       if (!settings) {
-        throw new Error('Failed to load settings before launch.')
+        throw new Error('Failed to load settings before launch.');
       }
 
       // 2. Get Version Details (re-fetch to ensure consistency)
-      const mainManifest = readLocalManifest(manifestPath)
+      const mainManifest = readLocalManifest(manifestPath);
       if (!mainManifest) {
-        throw new Error('Failed to load main manifest before launch.')
+        throw new Error('Failed to load main manifest before launch.');
       }
       const versionDetails = await getVersionDetails(
         versionId,
         versionsPath,
-        mainManifest
-      )
+        mainManifest,
+      );
       if (!versionDetails) {
-        throw new Error(`Failed to get version details for ${versionId}.`)
+        throw new Error(`Failed to get version details for ${versionId}.`);
       }
 
       // 3. Define Paths
-      const userDataPath = app.getPath('userData')
-      const librariesPath = path.join(userDataPath, 'libraries')
-      const assetsPath = path.join(userDataPath, 'assets')
-      const versionPath = path.join(versionsPath, versionId)
-      const nativesPath = path.join(versionPath, 'natives') // Define natives path
+      const userDataPath = app.getPath('userData');
+      const librariesPath = path.join(userDataPath, 'libraries');
+      const assetsPath = path.join(userDataPath, 'assets');
+      const versionPath = path.join(versionsPath, versionId);
+      const nativesPath = path.join(versionPath, 'natives'); // Define natives path
 
       const gamePaths = {
         userDataPath,
@@ -116,104 +116,104 @@ export function registerIpcHandlers({
         librariesPath,
         assetsPath,
         nativesPath,
-      }
+      };
 
       // 4. Trigger Launch (asynchronous, feedback via webContents.send)
-      launchVersion(versionDetails, settings, gamePaths, mainWindow)
+      launchVersion(versionDetails, settings, gamePaths, mainWindow);
 
-      return { success: true, message: 'Launch process initiated.' } // Initial confirmation
+      return { success: true, message: 'Launch process initiated.' }; // Initial confirmation
     } catch (err: unknown) {
       const errorMessage = getErrorMessage(
         err,
-        `Error during launch-version setup for ${versionId}`
-      )
-      console.error(`IPC: ${errorMessage}:`, err)
+        `Error during launch-version setup for ${versionId}`,
+      );
+      console.error(`IPC: ${errorMessage}:`, err);
       mainWindow?.webContents.send('launch-status', {
         status: 'error',
         message: errorMessage,
-      })
-      return { success: false, error: errorMessage }
+      });
+      return { success: false, error: errorMessage };
     }
-  })
+  });
 
   // Handler to kill the game process
   ipcMain.handle('kill-game', () => {
-    console.log('IPC: Handling kill-game')
+    console.log('IPC: Handling kill-game');
     try {
-      killRunningProcess()
-      return { success: true }
+      killRunningProcess();
+      return { success: true };
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err, 'Error killing game process')
-      console.error(`IPC: ${errorMessage}:`, err)
-      return { success: false, error: errorMessage }
+      const errorMessage = getErrorMessage(err, 'Error killing game process');
+      console.error(`IPC: ${errorMessage}:`, err);
+      return { success: false, error: errorMessage };
     }
-  })
+  });
 
   // --- Version Management Handlers ---
   ipcMain.handle(
     'delete-version',
     async (
       _event,
-      versionId: string
+      versionId: string,
     ): Promise<{ success: boolean; error?: string }> => {
-      console.log(`IPC: Handling delete-version for ${versionId}`)
+      console.log(`IPC: Handling delete-version for ${versionId}`);
       try {
-        await deleteVersion(versionId, versionsPath)
-        console.log(`IPC: Successfully deleted version ${versionId}`)
-        return { success: true }
+        await deleteVersion(versionId, versionsPath);
+        console.log(`IPC: Successfully deleted version ${versionId}`);
+        return { success: true };
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(
           err,
-          `Error deleting version ${versionId}`
-        )
-        console.error(`IPC: ${errorMessage}:`, err)
-        return { success: false, error: errorMessage }
+          `Error deleting version ${versionId}`,
+        );
+        console.error(`IPC: ${errorMessage}:`, err);
+        return { success: false, error: errorMessage };
       }
-    }
-  )
+    },
+  );
 
   ipcMain.handle(
     'open-directory',
     async (
       _event,
-      dirPath: string
+      dirPath: string,
     ): Promise<{ success: boolean; error?: string }> => {
-      console.log(`IPC: Handling open-directory for ${dirPath}`)
+      console.log(`IPC: Handling open-directory for ${dirPath}`);
       try {
         // Basic check if path exists before attempting to open
         if (!fs.existsSync(dirPath)) {
-          throw new Error(`Directory not found: ${dirPath}`)
+          throw new Error(`Directory not found: ${dirPath}`);
         }
-        await shell.openPath(dirPath)
-        console.log(`IPC: Successfully requested to open directory ${dirPath}`)
-        return { success: true }
+        await shell.openPath(dirPath);
+        console.log(`IPC: Successfully requested to open directory ${dirPath}`);
+        return { success: true };
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(
           err,
-          `Error opening directory ${dirPath}`
-        )
-        console.error(`IPC: ${errorMessage}:`, err)
-        return { success: false, error: errorMessage }
+          `Error opening directory ${dirPath}`,
+        );
+        console.error(`IPC: ${errorMessage}:`, err);
+        return { success: false, error: errorMessage };
       }
-    }
-  )
+    },
+  );
 
   // --- Add handler for opening external links ---
   ipcMain.handle('open-external-link', async (_event, url) => {
     try {
       // Validate URL basic structure (optional but recommended)
       if (url && (url.startsWith('http:') || url.startsWith('https:'))) {
-        await shell.openExternal(url)
-        return { success: true }
+        await shell.openExternal(url);
+        return { success: true };
       } else {
-        console.warn(`Attempted to open invalid external URL: ${url}`)
-        return { success: false, error: 'Invalid URL format' }
+        console.warn(`Attempted to open invalid external URL: ${url}`);
+        return { success: false, error: 'Invalid URL format' };
       }
     } catch (error) {
-      console.error(`IPC Error opening external link ${url}:`, error)
-      return { success: false, error: getErrorMessage(error) }
+      console.error(`IPC Error opening external link ${url}:`, error);
+      return { success: false, error: getErrorMessage(error) };
     }
-  })
+  });
 
-  console.log('IPC handlers registered.')
+  console.log('IPC handlers registered.');
 }

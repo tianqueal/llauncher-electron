@@ -26,21 +26,21 @@
  * ```
  */
 
-import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { RouterProvider } from 'react-router'
-import { router } from './router'
-import './index.css'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { RouterProvider } from 'react-router';
+import { router } from './router';
+import './index.css';
 
-const root = createRoot(document.getElementById('root'))
+const root = createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>
-)
+  </React.StrictMode>,
+);
 
 window.electron.onUpdateTheme((_, theme) => {
-  const root = document.documentElement
+  const root = document.documentElement;
 
-  root.style.setProperty('--scheme', theme)
-})
+  root.style.setProperty('--scheme', theme);
+});

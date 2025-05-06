@@ -1,14 +1,14 @@
-import Card from '../components/Card'
-import { FolderOpenIcon, TrashIcon } from '@heroicons/react/20/solid'
-import clsx from 'clsx'
-import { useLocalVersions } from '../hooks/useLocalVersions'
-import FormButton from '../components/FormButton'
-import Spinner from '../components/Spinner'
-import Dialog from '../components/Dialog'
-import { formatBytes } from '../utils/formatUtils'
-import { getErrorMessage } from '../utils/errorUtils'
-import LoadingOverlay from '../components/LoadingOverlay'
-import { motion, AnimatePresence } from 'motion/react'
+import Card from '../components/Card';
+import { FolderOpenIcon, TrashIcon } from '@heroicons/react/20/solid';
+import clsx from 'clsx';
+import { useLocalVersions } from '../hooks/useLocalVersions';
+import FormButton from '../components/FormButton';
+import Spinner from '../components/Spinner';
+import Dialog from '../components/Dialog';
+import { formatBytes } from '../utils/formatUtils';
+import { getErrorMessage } from '../utils/errorUtils';
+import LoadingOverlay from '../components/LoadingOverlay';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function VersionsView() {
   const {
@@ -19,7 +19,7 @@ export default function VersionsView() {
     handleDelete,
     // handleReinstall,
     clearError,
-  } = useLocalVersions()
+  } = useLocalVersions();
 
   // const { getFilteredVersionOptions } = useVersionManifest()
 
@@ -38,24 +38,24 @@ export default function VersionsView() {
 
   // Handler for opening directory
   const handleOpenDirectory = async (path: string) => {
-    console.log(`VersionsView: Requesting to open directory ${path}`)
+    console.log(`VersionsView: Requesting to open directory ${path}`);
     try {
-      const result = await window.electron.openDirectory(path)
+      const result = await window.electron.openDirectory(path);
       if (!result.success) {
         // Optionally show an error to the user if opening fails
-        console.error('Failed to open directory:', result.error)
+        console.error('Failed to open directory:', result.error);
         // You could use the Dialog component here if desired
-        alert(`Error opening directory: ${result.error}`)
+        alert(`Error opening directory: ${result.error}`);
       }
     } catch (err: unknown) {
-      const errorMessage = getErrorMessage(err, 'IPC Error opening directory')
-      console.error(`VersionsView: ${errorMessage}`, err)
-      alert(`Error: ${errorMessage}`)
+      const errorMessage = getErrorMessage(err, 'IPC Error opening directory');
+      console.error(`VersionsView: ${errorMessage}`, err);
+      alert(`Error: ${errorMessage}`);
     }
-  }
+  };
 
   return (
-    <div className="w-full flex justify-center relative max-w-4xl transition-[width] duration-300 ease-in-out">
+    <div className="relative flex w-full max-w-4xl justify-center transition-[width] duration-300 ease-in-out">
       {/* Loading Overlay */}
       <LoadingOverlay isLoading={isLoading} />
 
@@ -66,21 +66,21 @@ export default function VersionsView() {
           title="Error"
           description={error}
           onClose={clearError}
-          className="fixed bottom-5 right-5 z-30"
+          className="fixed right-5 bottom-5 z-30"
         />
       )}
       <Card
         className={clsx(
           'transition-opacity duration-300',
-          isLoading && 'opacity-50 pointer-events-none'
+          isLoading && 'pointer-events-none opacity-50',
         )}
       >
         {' '}
         {/* Dim card while loading */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between sm:items-center mb-6">
+        <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           {' '}
           {/* Increased margin */}
-          <p className="text-xl font-semibold self-start">
+          <p className="self-start text-xl font-semibold">
             Downloaded Versions
           </p>
           {/* Install New Version Button */}
@@ -101,7 +101,7 @@ export default function VersionsView() {
         {/* List of Versions */}
         <div className="space-y-3">
           {!isLoading && localVersions.length === 0 && !error && (
-            <p className="text-center text-white/60 py-4">
+            <p className="py-4 text-center text-white/60">
               No versions downloaded yet.
             </p>
           )}
@@ -111,7 +111,7 @@ export default function VersionsView() {
             {!isLoading &&
               !error &&
               localVersions.map((version) => {
-                const isCurrentlyDeleting = isDeleting === version.id
+                const isCurrentlyDeleting = isDeleting === version.id;
 
                 return (
                   <motion.div
@@ -129,7 +129,7 @@ export default function VersionsView() {
                     }}
                     // Apply base classes
                     className={clsx(
-                      'flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg dark:bg-white/5 p-3 origin-center' // Added origin-center for scale
+                      'flex origin-center flex-col items-start justify-between gap-3 rounded-lg p-3 sm:flex-row sm:items-center dark:bg-white/5', // Added origin-center for scale
                     )}
                   >
                     {/* ... Version Info ... */}
@@ -146,7 +146,7 @@ export default function VersionsView() {
                       </p>
                     </div>
                     {/* ... Action Buttons ... */}
-                    <div className="flex gap-2 flex-shrink-0 self-end sm:self-center">
+                    <div className="flex flex-shrink-0 gap-2 self-end sm:self-center">
                       <FormButton
                         variant="secondary"
                         onClick={() => handleOpenDirectory(version.path)}
@@ -157,7 +157,7 @@ export default function VersionsView() {
                         <FolderOpenIcon className="size-4" />
                       </FormButton>
                       <FormButton
-                        className="dark:bg-red-700 dark:hover:bg-red-600 dark:focus-visible:outline-red-500 px-2 py-1"
+                        className="px-2 py-1 dark:bg-red-700 dark:hover:bg-red-600 dark:focus-visible:outline-red-500"
                         onClick={() => handleDelete(version.id)}
                         title="Delete Version"
                         disabled={isLoading || !!isDeleting}
@@ -170,11 +170,11 @@ export default function VersionsView() {
                       </FormButton>
                     </div>
                   </motion.div>
-                )
+                );
               })}
           </AnimatePresence>
         </div>
       </Card>
     </div>
-  )
+  );
 }

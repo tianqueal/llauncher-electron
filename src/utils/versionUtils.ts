@@ -7,17 +7,17 @@
  * @param versionB Second version string
  */
 export function compareVersions(versionA: string, versionB: string): number {
-  const partsA = versionA.split('.').map(Number)
-  const partsB = versionB.split('.').map(Number)
-  const maxLength = Math.max(partsA.length, partsB.length)
+  const partsA = versionA.split('.').map(Number);
+  const partsB = versionB.split('.').map(Number);
+  const maxLength = Math.max(partsA.length, partsB.length);
 
   for (let i = 0; i < maxLength; i++) {
-    const partA = partsA[i] || 0 // Default to 0 if segment doesn't exist
-    const partB = partsB[i] || 0
+    const partA = partsA[i] || 0; // Default to 0 if segment doesn't exist
+    const partB = partsB[i] || 0;
 
-    if (partA > partB) return 1
-    if (partA < partB) return -1
+    if (partA > partB) return 1;
+    if (partA < partB) return -1;
   }
 
-  return 0 // Versions are equal
+  return 0; // Versions are equal
 }
