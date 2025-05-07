@@ -1,10 +1,12 @@
-name: Build Electron App
+name: Build and Release Electron App
 
 on:
   push:
     branches:
       - main
       - 'release/**'
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - develop
@@ -41,17 +43,19 @@ jobs:
             artifact_suffix: win-arm64
           # macOS
           - os: macos-latest
-            arch: arm64
-            target: darwin
-            forge_arch: arm64
-            artifact_suffix: mac-arm64
-          - os: macos-latest
             arch: x64
             target: darwin
             forge_arch: x64
             artifact_suffix: mac-x64
+          - os: macos-latest
+            arch: arm64
+            target: darwin
+            forge_arch: arm64
+            artifact_suffix: mac-arm64
 
     runs-on: ${{ matrix.os }}
+    outputs:
+      artifact_name_prefix: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version || steps.package_version_win.outputs.version }}
 
     steps:
       - name: Check out repository
@@ -78,15 +82,21 @@ jobs:
 
       - name: Build Electron app with Electron Forge
         run: npm run make -- --platform=${{ matrix.target }} --arch=${{ matrix.forge_arch }}
-        # env:
-        #   # Signing for macOS and Windows
-        #   CSC_LINK: ${{ secrets.CSC_LINK }} # Base64 encoded .p12 or .pfx file
-        #   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }} # Password for the certificate
+        env:
+          MANIFEST_URL: ${{ secrets.MANIFEST_URL }}
+          ASSET_BASE_URL: ${{ secrets.ASSET_BASE_URL }}
+          PATCH_NOTES_BASE_URL: ${{ secrets.PATCH_NOTES_BASE_URL }}
+          PATCH_NOTES_URL: ${{ secrets.PATCH_NOTES_URL }}
+          VITE_PATCH_NOTES_BASE_URL: ${{ secrets.VITE_PATCH_NOTES_BASE_URL }}
 
-        #   # Notarization for macOS (required for distribution outside App Store)
-        #   APPLE_ID: ${{ secrets.APPLE_ID }} # Your Apple Developer account email
-        #   APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }} # App-specific password
-        #   APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Your Apple Developer Team ID
+        # # Signing for macOS and Windows
+        # CSC_LINK: ${{ secrets.CSC_LINK }} # Base64 encoded .p12 or .pfx file
+        # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }} # Password for the certificate
+
+        # # Notarization for macOS (required for distribution outside App Store)
+        # APPLE_ID: ${{ secrets.APPLE_ID }} # Your Apple Developer account email
+        # APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }} # App-specific password
+        # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Your Apple Developer Team ID
 
       - name: Get package version (Unix)
         id: package_version
@@ -104,9 +114,68 @@ jobs:
         shell: pwsh
         if: runner.os == 'Windows'
 
-      - name: Upload Artifacts
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version || steps.package_version_win.outputs.version }}-${{ matrix.artifact_suffix }}
           path: out/make/
           if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # actions: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          RELEASE_VERSION="${TAG_NAME#v}"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          release_name: ${{ github.event.repository.name }} ${{ steps.get_version.outputs.release_version }}
+          body:
+            | # Puedes personalizar el cuerpo de la release aquí o usar body_path
+            Release for version ${{ steps.get_version.outputs.release_version }}
+            See CHANGELOG.md for details.
+          draft: true
+          prerelease: ${{ steps.get_version.outputs.is_prerelease }}
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: Upload Release Assets (ZIPs)
+        shell: bash
+        run: |
+          ARTIFACT_DIR="downloaded-artifacts"
+          find "$ARTIFACT_DIR" -type f -name "*.zip" -print0 | while IFS= read -r -d $'\0' file_path; do
+            asset_name=$(basename "$file_path")
+            echo "Uploading $asset_name from $file_path"
+            gh release upload "${{ steps.get_version.outputs.tag_name }}" "$file_path" --clobber
+          done
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
