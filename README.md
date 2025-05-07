@@ -84,8 +84,8 @@ LLauncher offers a simple and efficient way to manage and play your favourite ga
 
     ```dotenv
     # URLs for game manifests and assets - replace with your actual URLs for local dev
-    MANIFEST_URL="YOUR_MANIFEST_URL_HERE"
     ASSET_BASE_URL="YOUR_ASSET_BASE_URL_HERE"
+    MANIFEST_URL="YOUR_MANIFEST_URL_HERE"
     PATCH_NOTES_BASE_URL="YOUR_PATCH_NOTES_BASE_URL_HERE"
     PATCH_NOTES_URL="YOUR_PATCH_NOTES_URL_HERE"
     VITE_PATCH_NOTES_BASE_URL="YOUR_VITE_PATCH_NOTES_BASE_URL_HERE"
