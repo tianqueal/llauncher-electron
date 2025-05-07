@@ -335,7 +335,7 @@ function getAssetDownloadTasks(
     const hash = asset.hash;
     const firstTwo = hash.substring(0, 2);
     const assetPath = path.join(paths.assetsPath, 'objects', firstTwo, hash);
-    const assetUrl = `${assetBaseUrl}${firstTwo}/${hash}`;
+    const assetUrl = `${assetBaseUrl}/${firstTwo}/${hash}`;
 
     tasks.push({
       url: assetUrl,
