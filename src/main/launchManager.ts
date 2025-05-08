@@ -412,7 +412,7 @@ export async function launchVersion(
       });
       const initialResults = await downloadMultipleFiles(
         initialDownloads,
-        settings.parallelDownloads || 5,
+        settings.parallelDownloads || 3,
         mainWindow,
       );
       if (

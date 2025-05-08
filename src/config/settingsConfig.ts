@@ -39,7 +39,7 @@ export const defaultSettings: SettingsState = {
   resolutionHeight: 480,
   keepLauncherOpen: true,
   jvmArguments: '',
-  parallelDownloads: 5,
+  parallelDownloads: 3,
   lastSelectedVersion: '',
   showAllVersions: false,
   // --- Default Authentication Fields ---

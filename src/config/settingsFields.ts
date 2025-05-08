@@ -18,10 +18,10 @@ export const settingsFields: Array<SettingFieldConfig> = [
   {
     id: 'parallelDownloads',
     label: 'Parallel downloads',
-    description: 'Number of files being downloaded simultaneously (3-20)',
+    description: 'Number of files being downloaded simultaneously (1-20)',
     type: SettingFieldType.NUMBER,
     required: true,
-    validation: { min: 3, max: 20 },
+    validation: { min: 1, max: 20 },
   },
   {
     id: 'memoryMinimum',
