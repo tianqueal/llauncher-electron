@@ -19,6 +19,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [1.0.0-beta.2] - 2025-05-09
+
+### Added
+
+- Add CHANGELOG.md to document project updates and version history (8156ee6)
+- Enhance `downloadFile` function with retry logic and improved validation (ac9c827)
+
+### Changed
+
+- Update `parallelDownloads` default value and validation range in settings (4fcf36a)
+- Add note on environment variables for local production builds in `README.md` (fcd8f23)
+
+### Fixed
+
+- Remove `pull_request` trigger from workflows for cleaner CI configuration (d01b64f)
+
+### Chore
+
+- Update `CHANGELOG.md` format (3b8289b)
+
 ## [1.0.0-beta.1] - 2025-05-08
 
 ### Added
