@@ -113,6 +113,52 @@ npm run make
 
 This command utilises Electron Forge to build the application based on the configuration in `forge.config.ts`. The output will be located in the `out` directory.
 
+### Important Note on Environment Variables for Local Production Builds
+
+When building the application locally using `npm run make`, the Vite configuration for the main process (`vite.main.config.ts`) relies on specific environment variables (e.g., `ASSET_BASE_URL`, `MANIFEST_URL`) being present in `process.env` _at the time the Vite configuration is processed_.
+
+The default `vite.main.config.ts` in this project **does not** include logic to automatically load variables from your `.env` file into `process.env` specifically for the `npm run make` command. This behaviour, where environment variables might not be automatically available to the Vite configuration during an Electron Forge `make` process, has been a point of discussion within the Electron Forge community (e.g., issue #3558 in the Electron Forge repository). Consequently, if you run `npm run make` without ensuring these variables are loaded, the resulting application may not function correctly as critical URLs will be undefined.
+
+**To ensure your `.env` file is loaded for local `npm run make` builds:**
+
+1.  Ensure you have a `.env` file at the root of your project containing the necessary environment variables (as described in the "Environment Variables" section under "Installation & Development").
+
+2.  You will need to **modify your `vite.main.config.ts`** to explicitly load this `.env` file. A straightforward solution is to add the following code at the beginning of your `vite.main.config.ts`:
+
+    ```typescript
+    // vite.main.config.ts
+    // ... existing imports ...
+    import dotenv from 'dotenv'; // Add this import
+    import path from 'node:path'; // Add this import
+
+    // Add this block to load .env for the 'make' process
+    const envPath = path.resolve(process.cwd(), '.env'); // Loads from your existing .env file
+    const loadResult = dotenv.config({ path: envPath, override: true });
+
+    if (loadResult.error) {
+      console.error(
+        `[vite.main.config.ts] CRITICAL: Error loading .env file from ${envPath}. This file is required for local 'npm run make' builds to correctly set up environment variables. Error: ${loadResult.error.message}`,
+      );
+      process.exit(1); // Exit if .env cannot be loaded
+    } else {
+      console.log(
+        `[vite.main.config.ts] Successfully loaded environment variables from ${envPath} for the main process build.`,
+      );
+    }
+
+    // Existing export default defineConfig...
+    export default defineConfig(({ mode }) => {
+      // ... rest of the configuration ...
+      return {
+        /* ... */
+      };
+    });
+    ```
+
+    With this modification, your existing `.env` file (used for local development with `npm run start`) will also be loaded when you run `npm run make`, ensuring the necessary variables are available.
+
+**Note for CI (GitHub Actions):** In CI environments, these variables are typically injected directly into the build environment (e.g., via repository secrets). The `dotenv` loading block shown above, with its `process.exit(1)` on failure to load `.env`, would cause CI to fail if it couldn't find a `.env` file (which is expected as `.env` files should not be in source control). Therefore, CI environments rely on direct injection of environment variables, and this specific modification to `vite.main.config.ts` is primarily for ensuring consistent local builds. If you need `vite.main.config.ts` to be compatible with both local `.env` loading and CI direct injection without modification, a more nuanced loading logic would be required.
+
 ## 🤝 Contributing
 
 Contributions are welcome! Whether it's bug reports, feature suggestions, or code contributions, please feel free to open an issue or submit a pull request.
