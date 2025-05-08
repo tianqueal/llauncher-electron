@@ -170,12 +170,19 @@ jobs:
       - name: Upload Release Assets (ZIPs)
         shell: bash
         run: |
-          ARTIFACT_DIR="downloaded-artifacts"
-          find "$ARTIFACT_DIR" -type f -name "*.zip" -print0 | while IFS= read -r -d $'\0' file_path; do
-            asset_name=$(basename "$file_path")
-            echo "Uploading $asset_name from $file_path"
-            gh release upload "${{ steps.get_version.outputs.tag_name }}" "$file_path" --clobber
+          ARTIFACT_PARENT_DIR="downloaded-artifacts"
+          echo "Searching for artifacts in $ARTIFACT_PARENT_DIR..."
+          # Loop through each subdirectory in downloaded-artifacts (these are the individual artifact names)
+          find "$ARTIFACT_PARENT_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d $'\0' artifact_subdir; do
+            echo "Processing artifact directory: $artifact_subdir"
+            # Loop through each file within that specific artifact's subdirectory
+            find "$artifact_subdir" -type f -print0 | while IFS= read -r -d $'\0' file_path; do
+              asset_name=$(basename "$file_path")
+              echo "Uploading $asset_name from $file_path"
+              gh release upload "${{ steps.get_version.outputs.tag_name }}" "$file_path" --clobber
+            done
           done
+          echo "Finished uploading assets."
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
