@@ -11,13 +11,13 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     icon: 'assets/icon',
-    name: 'LLauncher (Beta)',
+    name: 'LLauncher',
     executableName: 'llauncher-electron',
     appBundleId: 'com.doctonight.llauncher',
     win32metadata: {
       CompanyName: 'Doctonight',
-      ProductName: 'LLauncher (Beta)',
-      FileDescription: 'LLauncher Game Runner (Beta)',
+      ProductName: 'LLauncher',
+      FileDescription: 'LLauncher Game Runner',
       OriginalFilename: 'llauncher-electron.exe',
     },
     appCategoryType: 'public.app-category.games',

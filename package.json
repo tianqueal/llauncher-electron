@@ -1,7 +1,7 @@
 {
   "name": "llauncher-electron",
-  "productName": "LLauncher (Beta)",
-  "version": "1.0.0-beta.2",
+  "productName": "LLauncher",
+  "version": "1.0.0",
   "description": "LLauncher is a open-source custom runner designed to provide a simple and efficient way to manage and play your favourite game version.",
   "main": ".vite/build/main.js",
   "scripts": {
