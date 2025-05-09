@@ -34,10 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Remove `pull_request` trigger from workflows for cleaner CI configuration (d01b64f)
+- Remove branch restrictions from workflow triggers for build and check secrets (4d6d275)
+- Enhance GitHub Actions workflow for release asset uploads, including staging directory and improved file handling (2167e48)
+- Further improve GitHub Actions release asset upload process and add debugging output (4677c63)
 
 ### Chore
 
 - Update `CHANGELOG.md` format (3b8289b)
+- Bump version to 1.0.0-beta.2 in package.json (297eee8)
+- Update CHANGELOG.md to include recent changes and version history (a5c2721)
 
 ## [1.0.0-beta.1] - 2025-05-08
 
