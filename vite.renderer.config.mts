@@ -1,8 +1,12 @@
-import { defineConfig } from 'vite'
-// eslint-disable-next-line import/no-unresolved
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config
-export default defineConfig({
-  plugins: [tailwindcss()],
-})
+export default defineConfig(({ mode }) => {
+  return {
+    plugins: [tailwindcss()],
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
+    },
+  };
+});

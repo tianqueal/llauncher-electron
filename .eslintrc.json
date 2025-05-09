@@ -8,9 +8,69 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
     "plugin:import/recommended",
     "plugin:import/electron",
-    "plugin:import/typescript"
+    "plugin:import/errors",
+    "plugin:import/warnings"
   ],
-  "parser": "@typescript-eslint/parser"
+  "plugins": ["@typescript-eslint", "react", "react-hooks", "import"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest", // Allows for the parsing of modern ECMAScript features
+    "sourceType": "module", // Allows for the use of imports
+    "project": "./tsconfig.json", // Important for type-aware linting rules
+    "ecmaFeatures": {
+      "jsx": true // Allows for the parsing of JSX
+    }
+  },
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "args": "after-used", // Ignore unused function arguments unless they are after the last used argument
+        "ignoreRestSiblings": true, // Allow rest siblings to be unused (e.g., const { a, ...rest } = obj;)
+        "varsIgnorePattern": "^_", // Allow variables prefixed with _ to be unused
+        "argsIgnorePattern": "^_" // Allow function arguments prefixed with _ to be unused
+      }
+    ],
+    "import/namespace": [
+      "error",
+      {
+        "allowComputed": true
+      }
+    ],
+    "import/no-named-as-default": "off" // Disable this rule globally
+  },
+  "settings": {
+    "react": {
+      "version": "detect" // Automatically detects the React version
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true, // Helps with type-only imports
+        "project": "./tsconfig.json"
+      },
+      "node": true
+    },
+    "import/parsers": {
+      // Ensure import plugin uses the typescript parser for .ts/.tsx files
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/ignore": ["node_modules", "dist", "dist-electron"]
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "dist/",
+    "dist-electron/",
+    "vite.*.config.mts",
+    "vite.*.config.ts",
+    "forge.config.ts",
+    "out/",
+    ".vite/",
+    "!.eslintrc.js", // Make sure .eslintrc.js itself is not ignored if it's in the root
+    "vite-env.d.ts",
+    "global.d.ts",
+    "forge.env.d.ts"
+  ]
 }

@@ -1,0 +1,252 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            arch: x64
+            target: linux
+            forge_arch: x64
+            artifact_suffix: linux-x64
+          - os: ubuntu-latest
+            arch: arm64
+            target: linux
+            forge_arch: arm64
+            artifact_suffix: linux-arm64
+          # Windows
+          - os: windows-latest
+            arch: x64
+            target: win32
+            forge_arch: x64
+            artifact_suffix: win-x64
+          - os: windows-11-arm
+            arch: arm64
+            target: win32
+            forge_arch: arm64
+            artifact_suffix: win-arm64
+          # macOS
+          - os: macos-latest
+            arch: x64
+            target: darwin
+            forge_arch: x64
+            artifact_suffix: mac-x64
+          - os: macos-latest
+            arch: arm64
+            target: darwin
+            forge_arch: arm64
+            artifact_suffix: mac-arm64
+
+    runs-on: ${{ matrix.os }}
+    outputs:
+      artifact_name_prefix: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version || steps.package_version_win.outputs.version }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Clean install dependencies (Unix)
+        run: rm -rf node_modules out
+        if: runner.os != 'Windows'
+        shell: bash
+
+      - name: Clean install dependencies (Windows)
+        run: Remove-Item -Recurse -Force node_modules, out -ErrorAction Ignore
+        if: runner.os == 'Windows'
+        shell: pwsh
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Electron app with Electron Forge
+        run: npm run make -- --platform=${{ matrix.target }} --arch=${{ matrix.forge_arch }}
+        env:
+          MANIFEST_URL: ${{ secrets.MANIFEST_URL }}
+          ASSET_BASE_URL: ${{ secrets.ASSET_BASE_URL }}
+          PATCH_NOTES_BASE_URL: ${{ secrets.PATCH_NOTES_BASE_URL }}
+          PATCH_NOTES_URL: ${{ secrets.PATCH_NOTES_URL }}
+          VITE_PATCH_NOTES_BASE_URL: ${{ secrets.VITE_PATCH_NOTES_BASE_URL }}
+
+        # # Signing for macOS and Windows
+        # CSC_LINK: ${{ secrets.CSC_LINK }} # Base64 encoded .p12 or .pfx file
+        # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }} # Password for the certificate
+
+        # # Notarization for macOS (required for distribution outside App Store)
+        # APPLE_ID: ${{ secrets.APPLE_ID }} # Your Apple Developer account email
+        # APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }} # App-specific password
+        # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }} # Your Apple Developer Team ID
+
+      - name: Get package version (Unix)
+        id: package_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+        if: runner.os != 'Windows'
+
+      - name: Get package version (Windows)
+        id: package_version_win
+        run: |
+          $VERSION = $(node -p "require('./package.json').version").Trim()
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$VERSION"
+        shell: pwsh
+        if: runner.os == 'Windows'
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ steps.package_version.outputs.version || steps.package_version_win.outputs.version }}-${{ matrix.artifact_suffix }}
+          path: out/make/
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      # actions: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          RELEASE_VERSION="${TAG_NAME#v}"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$RELEASE_VERSION" == *-* ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.tag_name }}
+          release_name: ${{ github.event.repository.name }} ${{ steps.get_version.outputs.release_version }}
+          body: |
+            Release for version ${{ steps.get_version.outputs.release_version }}
+            See CHANGELOG.md for details.
+          draft: true
+          prerelease: ${{ steps.get_version.outputs.is_prerelease }}
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+
+      - name: List downloaded files for debugging
+        shell: bash
+        run: |
+          echo "Listing all downloaded files and their structure:"
+          find downloaded-artifacts -ls
+          echo "--- End of file listing ---"
+
+      - name: Upload Release Assets
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG_NAME: ${{ steps.get_version.outputs.tag_name }}
+        run: |
+          set -x # Enable xtrace for detailed debugging of this step
+          ARTIFACT_PARENT_DIR="downloaded-artifacts"
+          TEMP_UPLOAD_DIR="temp-upload-staging" # For storing the generated ZIPs
+
+          echo "Creating temporary directory for ZIPs: $TEMP_UPLOAD_DIR"
+          mkdir -p "$TEMP_UPLOAD_DIR"
+
+          echo "Listing contents of $ARTIFACT_PARENT_DIR before looping:"
+          ls -lA "$ARTIFACT_PARENT_DIR"
+          echo "Current working directory: $(pwd)"
+
+          echo "Attempting to find subdirectories in $ARTIFACT_PARENT_DIR to ZIP and upload to tag $TAG_NAME..."
+
+          if [ ! -d "$ARTIFACT_PARENT_DIR" ]; then
+            echo "ERROR: Artifact parent directory '$ARTIFACT_PARENT_DIR' not found!"
+            exit 1
+          fi
+
+          # Check if zip is available
+          if ! command -v zip >/dev/null 2>&1; then
+            echo "ERROR: 'zip' command not found. Please install it."
+            exit 1
+          fi
+
+          # Check if gh is available
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "ERROR: 'gh' (GitHub CLI) command not found. Please ensure it's installed and in PATH."
+            exit 1
+          fi
+
+          processed_at_least_one=false
+          for artifact_subdir_path_with_trailing_slash in "$ARTIFACT_PARENT_DIR"/*/; do
+            # Remove trailing slash for consistent path handling
+            artifact_subdir_path="${artifact_subdir_path_with_trailing_slash%/}"
+
+            # If glob didn't match (and nullglob isn't set), artifact_subdir_path might be the literal pattern.
+            # So, always check if it's a directory.
+            if [ ! -d "$artifact_subdir_path" ]; then
+              echo "  Skipping '$artifact_subdir_path_with_trailing_slash' as it's not a valid directory."
+              continue
+            fi
+            
+            processed_at_least_one=true
+            artifact_name_from_dir=$(basename "$artifact_subdir_path")
+            echo "Processing artifact directory: $artifact_name_from_dir (Path: $artifact_subdir_path)"
+
+            zip_file_name="${artifact_name_from_dir}.zip"
+            # Path for the zip file in the temp staging directory
+            zip_destination_path="${TEMP_UPLOAD_DIR}/${zip_file_name}"
+            
+            echo "  Creating ZIP file: $zip_destination_path from contents of $artifact_subdir_path"
+            
+            # Create the zip. cd into the directory to get relative paths inside the zip.
+            # $OLDPWD will be the original CWD. The path to zip_destination_path is relative to $OLDPWD.
+            # The zip file will be created at $ORIGINAL_CWD/$zip_destination_path.
+            if (cd "$artifact_subdir_path" && zip -r "$OLDPWD/$zip_destination_path" .); then
+              echo "  Successfully created ZIP: $zip_destination_path"
+              echo "  Uploading ZIP file: $zip_file_name (from $zip_destination_path)"
+              gh release upload "$TAG_NAME" "$zip_destination_path" --clobber
+            else
+              echo "  ERROR: Failed to create or upload ZIP for '$artifact_name_from_dir'. Check 'zip' command output above (if any)."
+              # Consider exiting if one failure should stop all: exit 1
+            fi
+          done
+
+          if [ "$processed_at_least_one" = false ]; then
+            echo "WARNING: No artifact subdirectories were found or processed in '$ARTIFACT_PARENT_DIR'."
+          fi
+
+          echo "Loop finished. Cleaning up temporary ZIP directory: $TEMP_UPLOAD_DIR"
+          rm -rf "$TEMP_UPLOAD_DIR"
+
+          echo "Finished uploading assets."
+          set +x # Disable xtrace
