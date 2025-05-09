@@ -19,32 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-## [1.0.0-beta.2] - 2025-05-09
-
-### Added
-
-- Add CHANGELOG.md to document project updates and version history (8156ee6)
-- Enhance `downloadFile` function with retry logic and improved validation (ac9c827)
-
-### Changed
-
-- Update `parallelDownloads` default value and validation range in settings (4fcf36a)
-- Add note on environment variables for local production builds in `README.md` (fcd8f23)
-
-### Fixed
-
-- Remove `pull_request` trigger from workflows for cleaner CI configuration (d01b64f)
-- Remove branch restrictions from workflow triggers for build and check secrets (4d6d275)
-- Enhance GitHub Actions workflow for release asset uploads, including staging directory and improved file handling (2167e48)
-- Further improve GitHub Actions release asset upload process and add debugging output (4677c63)
-
-### Chore
-
-- Update `CHANGELOG.md` format (3b8289b)
-- Bump version to 1.0.0-beta.2 in package.json (297eee8)
-- Update CHANGELOG.md to include recent changes and version history (a5c2721)
-
-## [1.0.0-beta.1] - 2025-05-08
+## [1.0.0] - 2025-05-09
 
 ### Added
 
@@ -84,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MIT License file to the project. (9cd2eab)
 - GitHub Actions workflow to check for required secrets. (2c01961)
 - Environment variable definitions for asset and patch notes URLs. (613302c)
+- Add CHANGELOG.md to document project updates and version history (8156ee6)
+- Enhance `downloadFile` function with retry logic and improved validation (ac9c827)
 
 ### Changed
 
@@ -106,6 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Standardized import statement quotes in `remoteOptions.ts`. (a457acd)
 - Updated product name and description in `package.json`; enhanced `AboutView` with dynamic content. (c4266df)
 - Updated build workflow to include package version and modify executable name in `forge.config.ts`. (83fcf31)
+- Update `parallelDownloads` default value and validation range in settings (4fcf36a)
+- Add note on environment variables for local production builds in `README.md` (fcd8f23)
 
 ### Fixed
 
@@ -117,6 +96,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected asset URL construction in `getAssetDownloadTasks` function. (d319565)
 - Reordered `MANIFEST_URL` in `.env.example` for consistency. (82fe25d)
 - Improved artifact upload process by handling subdirectory structures in GitHub Actions. (c710e7a)
+- Remove `pull_request` trigger from workflows for cleaner CI configuration (d01b64f)
+- Remove branch restrictions from workflow triggers for build and check secrets (4d6d275)
+- Enhance GitHub Actions workflow for release asset uploads, including staging directory and improved file handling (2167e48)
+- Further improve GitHub Actions release asset upload process and add debugging output (4677c63)
+- Improve ZIP file creation and upload logging in release process (8b2f67c)
+- Improve artifact upload process with error handling and validation checks (a35e51c)
+- Enhance release asset upload process with detailed debugging and improved ZIP handling (6c9d406)
 
 ### Removed
 
@@ -127,3 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Chore
 
 - Initial commit. (aac8733) - _Also listed under Added as it's foundational_
+- Update `CHANGELOG.md` format (3b8289b)
+- Bump version to 1.0.0-beta.2 in package.json (297eee8)
+- Update CHANGELOG.md to include recent changes and version history (a5c2721)
+- Update CHANGELOG.md to reflect recent changes and improvements (00ba0a3)
