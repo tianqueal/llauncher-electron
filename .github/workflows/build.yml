@@ -186,29 +186,60 @@ jobs:
 
           echo "Attempting to find subdirectories in $ARTIFACT_PARENT_DIR to ZIP and upload to tag $TAG_NAME..."
 
-          find "$ARTIFACT_PARENT_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d $'\\0' artifact_subdir_path; do
+          if [ ! -d "$ARTIFACT_PARENT_DIR" ]; then
+            echo "ERROR: Artifact parent directory '$ARTIFACT_PARENT_DIR' not found!"
+            exit 1
+          fi
+
+          # Check if zip is available
+          if ! command -v zip >/dev/null 2>&1; then
+            echo "ERROR: 'zip' command not found. Please install it."
+            exit 1
+          fi
+
+          # Check if gh is available
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "ERROR: 'gh' (GitHub CLI) command not found. Please ensure it's installed and in PATH."
+            exit 1
+          fi
+
+          processed_at_least_one=false
+          for artifact_subdir_path_with_trailing_slash in "$ARTIFACT_PARENT_DIR"/*/; do
+            # Remove trailing slash for consistent path handling
+            artifact_subdir_path="${artifact_subdir_path_with_trailing_slash%/}"
+
+            # If glob didn't match (and nullglob isn't set), artifact_subdir_path might be the literal pattern.
+            # So, always check if it's a directory.
+            if [ ! -d "$artifact_subdir_path" ]; then
+              echo "  Skipping '$artifact_subdir_path_with_trailing_slash' as it's not a valid directory."
+              continue
+            fi
+            
+            processed_at_least_one=true
             artifact_name_from_dir=$(basename "$artifact_subdir_path")
             echo "Processing artifact directory: $artifact_name_from_dir (Path: $artifact_subdir_path)"
 
             zip_file_name="${artifact_name_from_dir}.zip"
-            # Define the full path for the output ZIP file within the temp staging directory
-            zip_file_output_path="${TEMP_UPLOAD_DIR}/${zip_file_name}" 
+            # Path for the zip file in the temp staging directory
+            zip_destination_path="${TEMP_UPLOAD_DIR}/${zip_file_name}"
             
-            echo "  Creating ZIP file: $zip_file_output_path from contents of $artifact_subdir_path"
+            echo "  Creating ZIP file: $zip_destination_path from contents of $artifact_subdir_path"
             
-            # Change to the artifact subdirectory, zip its contents (.)
-            # and place the output zip in $OLDPWD (workspace root) / $TEMP_UPLOAD_DIR / $zip_file_name
-            (cd "$artifact_subdir_path" && zip -r "$OLDPWD/$zip_file_output_path" .)
-            
-            if [ -f "$zip_file_output_path" ]; then
-              echo "  Successfully created ZIP: $zip_file_output_path"
-              echo "  Uploading ZIP file: $zip_file_name"
-              gh release upload "$TAG_NAME" "$zip_file_output_path" --clobber
+            # Create the zip. cd into the directory to get relative paths inside the zip.
+            # $OLDPWD will be the original CWD. The path to zip_destination_path is relative to $OLDPWD.
+            if (cd "$artifact_subdir_path" && zip -r "$OLDPWD/$zip_destination_path" .); then
+              echo "  Successfully created ZIP: $OLDPWD/$zip_destination_path"
+              echo "  Uploading ZIP file: $zip_file_name (from $OLDPWD/$zip_destination_path)"
+              gh release upload "$TAG_NAME" "$OLDPWD/$zip_destination_path" --clobber
             else
-              echo "  ERROR: Failed to create ZIP file: $zip_file_output_path. Skipping upload for this artifact."
-              # Consider adding 'exit 1' here if a failed zip should stop the entire workflow
+              echo "  ERROR: Failed to create or upload ZIP for '$artifact_name_from_dir'. Check 'zip' command output above (if any)."
+              # Consider exiting if one failure should stop all: exit 1
             fi
           done
+
+          if [ "$processed_at_least_one" = false ]; then
+            echo "WARNING: No artifact subdirectories were found or processed in '$ARTIFACT_PARENT_DIR'."
+          fi
 
           echo "Loop finished. Cleaning up temporary ZIP directory: $TEMP_UPLOAD_DIR"
           rm -rf "$TEMP_UPLOAD_DIR"
