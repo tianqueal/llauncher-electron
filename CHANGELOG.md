@@ -103,6 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve ZIP file creation and upload logging in release process (8b2f67c)
 - Improve artifact upload process with error handling and validation checks (a35e51c)
 - Enhance release asset upload process with detailed debugging and improved ZIP handling (6c9d406)
+- Updated GitHub Actions workflow triggers (`build.yml`, `check-secrets.yml`) to run on pushes to `main` and `release/**` branches. This ensures necessary status checks are present before tagging a release, enabling proper use of tag protection rules and improving release process reliability. (ace9567)
 
 ### Removed
 
