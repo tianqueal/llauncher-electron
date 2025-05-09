@@ -179,9 +179,12 @@ jobs:
           RELEASE_VERSION: ${{ steps.get_version.outputs.release_version }}
         run: |
           ARTIFACT_PARENT_DIR="downloaded-artifacts"
+          TEMP_UPLOAD_DIR="temp-upload-staging"
+          mkdir -p "$TEMP_UPLOAD_DIR" # Create the temporary staging directory
+
           echo "Searching for distributable files in $ARTIFACT_PARENT_DIR to upload to tag $TAG_NAME..."
 
-          find "$ARTIFACT_PARENT_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d $'\0' artifact_subdir_path; do
+          find "$ARTIFACT_PARENT_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d $'\\0' artifact_subdir_path; do
             artifact_name_from_dir=$(basename "$artifact_subdir_path")
             echo "Processing files from artifact directory: $artifact_name_from_dir ($artifact_subdir_path)"
 
@@ -190,9 +193,9 @@ jobs:
 
             echo "  Platform suffix determined: $platform_suffix"
 
-            find "$artifact_subdir_path" -type f -print0 | while IFS= read -r -d $'\0' file_path; do
-              original_basename=$(basename "$file_path")
-              asset_name_for_release="$original_basename"
+            find "$artifact_subdir_path" -type f -print0 | while IFS= read -r -d $'\\0' original_file_path; do
+              original_basename=$(basename "$original_file_path")
+              upload_file_path="$original_file_path" # Default to original path
 
               if [[ "$original_basename" == "RELEASES" ]] || \
                  [[ "$original_basename" == "RELEASES.json" ]] || \
@@ -201,15 +204,26 @@ jobs:
                 filename_no_ext="${original_basename%.*}"
                 extension="${original_basename##*.}"
                 
-                if [[ "$extension" == "$original_basename" ]]; then
-                    asset_name_for_release="${filename_no_ext}-${platform_suffix}"
-                else
-                    asset_name_for_release="${filename_no_ext}-${platform_suffix}.${extension}"
+                new_asset_filename=""
+                if [[ "$extension" == "$original_basename" ]]; then # File has no extension (e.g., RELEASES)
+                    new_asset_filename="${filename_no_ext}-${platform_suffix}"
+                else # File has an extension (e.g., RELEASES.json)
+                    new_asset_filename="${filename_no_ext}-${platform_suffix}.${extension}"
                 fi
+                
+                # Copy the file to the staging directory with the new name
+                cp "$original_file_path" "$TEMP_UPLOAD_DIR/$new_asset_filename"
+                upload_file_path="$TEMP_UPLOAD_DIR/$new_asset_filename" # Update path to the renamed file
+                echo "  Staging '$original_basename' as '$new_asset_filename' for upload."
               fi
 
-              echo "  Uploading asset: '$asset_name_for_release' (from original: '$original_basename')"
-              gh release upload "$TAG_NAME" "$file_path" --asset-name "$asset_name_for_release" --clobber
+              echo "  Uploading asset from: '$upload_file_path' (original basename: '$original_basename')"
+              # The asset name on GitHub release will be the basename of $upload_file_path
+              gh release upload "$TAG_NAME" "$upload_file_path" --clobber
             done
           done
+
+          # Clean up the temporary staging directory
+          rm -rf "$TEMP_UPLOAD_DIR"
+
           echo "Finished uploading assets."
