@@ -105,7 +105,7 @@ jobs:
       - name: Get package version (Windows)
         id: package_version_win
         run: |
-          $VERSION = node -p "require('./package.json').version"
+          $VERSION = $(node -p "require('./package.json').version").Trim()
           Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$VERSION"
         shell: pwsh
         if: runner.os == 'Windows'
