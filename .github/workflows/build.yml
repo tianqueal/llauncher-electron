@@ -227,10 +227,11 @@ jobs:
             
             # Create the zip. cd into the directory to get relative paths inside the zip.
             # $OLDPWD will be the original CWD. The path to zip_destination_path is relative to $OLDPWD.
+            # The zip file will be created at $ORIGINAL_CWD/$zip_destination_path.
             if (cd "$artifact_subdir_path" && zip -r "$OLDPWD/$zip_destination_path" .); then
-              echo "  Successfully created ZIP: $OLDPWD/$zip_destination_path"
-              echo "  Uploading ZIP file: $zip_file_name (from $OLDPWD/$zip_destination_path)"
-              gh release upload "$TAG_NAME" "$OLDPWD/$zip_destination_path" --clobber
+              echo "  Successfully created ZIP: $zip_destination_path"
+              echo "  Uploading ZIP file: $zip_file_name (from $zip_destination_path)"
+              gh release upload "$TAG_NAME" "$zip_destination_path" --clobber
             else
               echo "  ERROR: Failed to create or upload ZIP for '$artifact_name_from_dir'. Check 'zip' command output above (if any)."
               # Consider exiting if one failure should stop all: exit 1
