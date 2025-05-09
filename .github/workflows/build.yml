@@ -2,6 +2,9 @@ name: Build and Release Electron App
 
 on:
   push:
+    branches:
+      - main
+      - 'release/**'
     tags:
       - 'v*'
   workflow_dispatch:
