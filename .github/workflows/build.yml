@@ -172,55 +172,46 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           TAG_NAME: ${{ steps.get_version.outputs.tag_name }}
-          REPO_NAME: ${{ github.event.repository.name }}
-          RELEASE_VERSION: ${{ steps.get_version.outputs.release_version }}
         run: |
+          set -x # Enable xtrace for detailed debugging of this step
           ARTIFACT_PARENT_DIR="downloaded-artifacts"
-          TEMP_UPLOAD_DIR="temp-upload-staging"
-          mkdir -p "$TEMP_UPLOAD_DIR" # Create the temporary staging directory
+          TEMP_UPLOAD_DIR="temp-upload-staging" # For storing the generated ZIPs
 
-          echo "Searching for distributable files in $ARTIFACT_PARENT_DIR to upload to tag $TAG_NAME..."
+          echo "Creating temporary directory for ZIPs: $TEMP_UPLOAD_DIR"
+          mkdir -p "$TEMP_UPLOAD_DIR"
+
+          echo "Listing contents of $ARTIFACT_PARENT_DIR before looping:"
+          ls -lA "$ARTIFACT_PARENT_DIR"
+          echo "Current working directory: $(pwd)"
+
+          echo "Attempting to find subdirectories in $ARTIFACT_PARENT_DIR to ZIP and upload to tag $TAG_NAME..."
 
           find "$ARTIFACT_PARENT_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | while IFS= read -r -d $'\\0' artifact_subdir_path; do
             artifact_name_from_dir=$(basename "$artifact_subdir_path")
-            echo "Processing files from artifact directory: $artifact_name_from_dir ($artifact_subdir_path)"
+            echo "Processing artifact directory: $artifact_name_from_dir (Path: $artifact_subdir_path)"
 
-            expected_prefix="${REPO_NAME}-${RELEASE_VERSION}-"
-            platform_suffix="${artifact_name_from_dir#$expected_prefix}"
-
-            echo "  Platform suffix determined: $platform_suffix"
-
-            find "$artifact_subdir_path" -type f -print0 | while IFS= read -r -d $'\\0' original_file_path; do
-              original_basename=$(basename "$original_file_path")
-              upload_file_path="$original_file_path" # Default to original path
-
-              if [[ "$original_basename" == "RELEASES" ]] || \
-                 [[ "$original_basename" == "RELEASES.json" ]] || \
-                 [[ "$original_basename" == "PENDING" ]]; then
-                
-                filename_no_ext="${original_basename%.*}"
-                extension="${original_basename##*.}"
-                
-                new_asset_filename=""
-                if [[ "$extension" == "$original_basename" ]]; then # File has no extension (e.g., RELEASES)
-                    new_asset_filename="${filename_no_ext}-${platform_suffix}"
-                else # File has an extension (e.g., RELEASES.json)
-                    new_asset_filename="${filename_no_ext}-${platform_suffix}.${extension}"
-                fi
-                
-                # Copy the file to the staging directory with the new name
-                cp "$original_file_path" "$TEMP_UPLOAD_DIR/$new_asset_filename"
-                upload_file_path="$TEMP_UPLOAD_DIR/$new_asset_filename" # Update path to the renamed file
-                echo "  Staging '$original_basename' as '$new_asset_filename' for upload."
-              fi
-
-              echo "  Uploading asset from: '$upload_file_path' (original basename: '$original_basename')"
-              # The asset name on GitHub release will be the basename of $upload_file_path
-              gh release upload "$TAG_NAME" "$upload_file_path" --clobber
-            done
+            zip_file_name="${artifact_name_from_dir}.zip"
+            # Define the full path for the output ZIP file within the temp staging directory
+            zip_file_output_path="${TEMP_UPLOAD_DIR}/${zip_file_name}" 
+            
+            echo "  Creating ZIP file: $zip_file_output_path from contents of $artifact_subdir_path"
+            
+            # Change to the artifact subdirectory, zip its contents (.)
+            # and place the output zip in $OLDPWD (workspace root) / $TEMP_UPLOAD_DIR / $zip_file_name
+            (cd "$artifact_subdir_path" && zip -r "$OLDPWD/$zip_file_output_path" .)
+            
+            if [ -f "$zip_file_output_path" ]; then
+              echo "  Successfully created ZIP: $zip_file_output_path"
+              echo "  Uploading ZIP file: $zip_file_name"
+              gh release upload "$TAG_NAME" "$zip_file_output_path" --clobber
+            else
+              echo "  ERROR: Failed to create ZIP file: $zip_file_output_path. Skipping upload for this artifact."
+              # Consider adding 'exit 1' here if a failed zip should stop the entire workflow
+            fi
           done
 
-          # Clean up the temporary staging directory
+          echo "Loop finished. Cleaning up temporary ZIP directory: $TEMP_UPLOAD_DIR"
           rm -rf "$TEMP_UPLOAD_DIR"
 
           echo "Finished uploading assets."
+          set +x # Disable xtrace
