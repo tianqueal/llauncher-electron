@@ -26,8 +26,8 @@ export default function PlayView() {
 
   // --- Settings Hook ---
   const {
-    settings,
-    handleChange,
+    launcherProfiles,
+    handleLauncherProfilesChange,
     isLoading: isLoadingSettings,
   } = useSettings();
 
@@ -83,13 +83,13 @@ export default function PlayView() {
   useEffect(() => {
     if (!selectedVersion && !isLoadingOptions && !isLoadingSettings) {
       const initialVersion =
-        settings.lastSelectedVersion || latestReleaseId || '';
+        launcherProfiles.lastSelectedVersion || latestReleaseId || '';
       setSelectedVersion(initialVersion);
       console.log('PlayView: Default version set to', latestReleaseId);
     }
   }, [
     selectedVersion,
-    settings.lastSelectedVersion,
+    launcherProfiles.lastSelectedVersion,
     latestReleaseId,
     isLoadingOptions,
     isLoadingSettings,
@@ -100,12 +100,12 @@ export default function PlayView() {
     // Only run if a version is selected and nothing critical is loading
     if (selectedVersion && !isLoadingOptions && !isLoadingSettings) {
       // Check if the selected version is different from the saved one to avoid unnecessary saves
-      if (selectedVersion !== settings.lastSelectedVersion) {
+      if (selectedVersion !== launcherProfiles.lastSelectedVersion) {
         console.log(
           'PlayView: Saving selected version to settings:',
           selectedVersion,
         );
-        handleChange('lastSelectedVersion', selectedVersion);
+        handleLauncherProfilesChange('lastSelectedVersion', selectedVersion);
       }
     }
     // Dependencies: Run when selection changes or loading finishes
@@ -113,8 +113,8 @@ export default function PlayView() {
     selectedVersion,
     isLoadingOptions,
     isLoadingSettings,
-    handleChange,
-    settings.lastSelectedVersion,
+    handleLauncherProfilesChange,
+    launcherProfiles.lastSelectedVersion,
   ]);
 
   // // Log details when they load
@@ -163,7 +163,7 @@ export default function PlayView() {
 
     // 3. Remote (Available Releases) Group
     // Fetch a decent number initially, then filter and slice
-    const remoteOptionKey = settings.showAllVersions
+    const remoteOptionKey = launcherProfiles.settings.showAllVersions
       ? 'allVersions'
       : 'recommended';
 
