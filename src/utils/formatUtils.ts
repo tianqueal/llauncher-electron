@@ -1,4 +1,4 @@
-import { SettingsState } from '../config/settingsConfig';
+import { SettingsState } from '../types/SettingsState';
 
 /**
  * Formats a number of bytes into a human-readable string (KB, MB, GB, etc.).
@@ -20,6 +20,7 @@ export function formatBytes(bytes: number | undefined, decimals = 2): string {
     sizes[unitIndex]
   );
 }
+
 /**
  * Trims all string values in a settings object.
  * @param settings The settings object to be trimmed.
