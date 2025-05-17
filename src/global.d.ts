@@ -1,5 +1,5 @@
 import { IpcRendererEvent } from 'electron';
-import { SettingsState } from './config/settingsConfig';
+import { LauncherProfiles } from './config/launcherProfilesConfig';
 import { VersionManifest } from './types/VersionManifest';
 import { PatchNotes } from './types/PatchNotes';
 import { LocalVersion } from './types/LocalVersion';
@@ -21,10 +21,10 @@ declare global {
       onUpdateTheme: (
         callback: (event: IpcRendererEvent, theme: string) => void,
       ) => void;
-      saveSettings: (
-        settings: SettingsState,
+      loadLauncherProfiles: () => Promise<LauncherProfiles>;
+      saveLauncherProfiles: (
+        laucherProfiles: LauncherProfiles,
       ) => Promise<{ success: boolean; error?: string }>;
-      loadSettings: () => Promise<SettingsState>;
       // Versions
       listVersions: () => Promise<Array<LocalVersion>>;
       // Version Manifest
