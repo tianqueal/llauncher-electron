@@ -1,4 +1,3 @@
-// src/types/PatchNotes.ts
 export interface PatchNotes {
   version: number;
   entries: Array<PatchNotesEntry>; // Renamed Entry to avoid potential naming conflicts
