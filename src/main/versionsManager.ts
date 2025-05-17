@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
 import { LocalVersion, LocalVersionStatus } from '../types/LocalVersion';
-import { Arguments, VersionDetails } from '../types/VersionDetails';
+import { Library, VersionDetails } from '../types/VersionDetails';
 import { VersionManifest } from '../types/VersionManifest';
 import { getErrorMessage } from '../utils/errorUtils';
 import { ensureVersionsDirExists, getDirectorySize } from '../utils/fsUtils';
@@ -125,11 +125,11 @@ async function fetchVersionDetailsFromWeb(
 
 /**
  * Merges a child version's details onto a parent's details.
- * This is crucial for handling versions like OptiFine that inherit from a base version.
+ * This is crucial for handling versions that inherit from a base version.
  */
 function mergeVersionDetails(
   parentDetails: VersionDetails,
-  childDetails: Partial<VersionDetails>, // childDetails might be incomplete as it only overrides/adds
+  childDetails: VersionDetails, // childDetails should be a full VersionDetails object now
 ): VersionDetails {
   console.log(
     `VersionsManager: Merging child ${childDetails.id} onto parent ${parentDetails.id}`,
@@ -138,61 +138,118 @@ function mergeVersionDetails(
   // Start with a deep clone of parent details to avoid modifying the original
   const merged: VersionDetails = JSON.parse(JSON.stringify(parentDetails));
 
-  // Override simple properties
-  merged.id = childDetails.id || merged.id;
-  merged.time = childDetails.time || merged.time;
-  merged.releaseTime = childDetails.releaseTime || merged.releaseTime;
-  merged.type = childDetails.type || merged.type;
-  merged.mainClass = childDetails.mainClass || merged.mainClass;
+  // The ID of the merged version is the child's ID.
+  merged.id = childDetails.id;
 
-  // Merge libraries: Add child libraries, avoid duplicates by name
+  // The 'inheritsFrom' property in the merged result should reflect the parent's ID.
+  // The child's JSON should have originally specified this parent.
+  // If childDetails.inheritsFrom is different from parentDetails.id, it's a bit unusual,
+  // but we'll trust childDetails if it specifies one.
+  // However, for the purpose of finding the *original vanilla JAR*, parentDetails.id is key.
+  // So, we explicitly set merged.inheritsFrom to parentDetails.id.
+  merged.inheritsFrom = parentDetails.id;
+
+  // Override simple properties from child if they exist
+  if (childDetails.time) merged.time = childDetails.time;
+  if (childDetails.releaseTime) merged.releaseTime = childDetails.releaseTime;
+  if (childDetails.type) merged.type = childDetails.type;
+  if (childDetails.mainClass) merged.mainClass = childDetails.mainClass;
+  if (childDetails.logging) merged.logging = childDetails.logging;
+  if (childDetails.minimumLauncherVersion !== undefined)
+    merged.minimumLauncherVersion = childDetails.minimumLauncherVersion;
+  if (childDetails.complianceLevel !== undefined)
+    merged.complianceLevel = childDetails.complianceLevel;
+
+  // Merge libraries: Child libraries take precedence or are added.
   if (childDetails.libraries) {
     const parentLibs = merged.libraries || [];
     const childLibs = childDetails.libraries;
-    const libraryNames = new Set(parentLibs.map((lib) => lib.name));
-    childLibs.forEach((childLib) => {
-      if (!libraryNames.has(childLib.name)) {
-        parentLibs.push(childLib);
-        libraryNames.add(childLib.name);
-      } else {
-        // Potentially replace if versions differ, or just log. For OptiFine, usually new libs.
-        console.log(
-          `VersionsManager: Library ${childLib.name} already exists, not adding from child.`,
-        );
-      }
+
+    // Use a Map to ensure child libraries override parent libraries with the same name.
+    // Key: full library name (e.g., "org.lwjgl:lwjgl:3.3.3:natives-macos-arm64")
+    // This ensures that all distinct artifacts (including all native variants) are preserved
+    // unless a child library explicitly overrides one with the exact same full name.
+    const finalLibrariesMap = new Map<string, Library>();
+
+    // Add all parent libraries first
+    parentLibs.forEach((lib) => {
+      // Use the full library name as the key to preserve all variants
+      finalLibrariesMap.set(lib.name, lib);
     });
-    merged.libraries = parentLibs;
+
+    // Add/override with child libraries
+    childLibs.forEach((childLib) => {
+      // Use the full library name as the key
+      // This will override a parent library if the child provides one with the exact same name,
+      // or add it if it's a new library.
+      finalLibrariesMap.set(childLib.name, childLib);
+    });
+
+    merged.libraries = Array.from(finalLibrariesMap.values());
   }
 
   // Merge arguments (game and jvm)
-  // For game arguments, OptiFine often adds to existing ones.
-  // For JVM arguments, it might also add some.
+  // Child arguments are typically appended.
   if (childDetails.arguments) {
     if (!merged.arguments) {
-      merged.arguments = {} as Arguments; // Initialize if parent had no arguments property
+      // Si el padre no tenía 'arguments', inicializarlo.
+      merged.arguments = { game: [], jvm: [] };
     }
+
+    // Asegurar que merged.arguments.game y merged.arguments.jvm sean arrays
+    merged.arguments.game = merged.arguments.game || [];
+    merged.arguments.jvm = merged.arguments.jvm || [];
+
     if (childDetails.arguments.game) {
-      const parentGameArgs = merged.arguments.game || [];
+      console.log(
+        `VersionsManager: Merging game arguments. Parent had ${merged.arguments.game.length}, child has ${childDetails.arguments.game.length}`,
+      );
       merged.arguments.game = [
-        ...parentGameArgs,
+        ...merged.arguments.game,
         ...childDetails.arguments.game,
       ];
+      console.log(
+        `VersionsManager: Merged game arguments total: ${merged.arguments.game.length}`,
+      );
     }
+
     if (childDetails.arguments.jvm) {
-      const parentJvmArgs = merged.arguments.jvm || [];
-      merged.arguments.jvm = [...parentJvmArgs, ...childDetails.arguments.jvm];
+      console.log(
+        `VersionsManager: Merging JVM arguments. Parent had ${merged.arguments.jvm.length}, child has ${childDetails.arguments.jvm.length}`,
+      );
+      console.log(
+        'VersionsManager: Parent JVM Args before merge:',
+        JSON.stringify(merged.arguments.jvm),
+      );
+      console.log(
+        'VersionsManager: Child JVM Args for merge:',
+        JSON.stringify(childDetails.arguments.jvm),
+      );
+      merged.arguments.jvm = [
+        ...merged.arguments.jvm,
+        ...childDetails.arguments.jvm,
+      ];
+      console.log(
+        `VersionsManager: Merged JVM arguments total: ${merged.arguments.jvm.length}`,
+      );
+      console.log(
+        'VersionsManager: Final Merged JVM Args:',
+        JSON.stringify(merged.arguments.jvm),
+      );
     }
+  } else if (!merged.arguments) {
+    // Si ni el hijo tiene 'arguments' y el padre (clonado) tampoco, inicializar.
+    merged.arguments = { game: [], jvm: [] };
   }
 
   // Other properties like assetIndex, assets, downloads are typically inherited
   // if not specified in child. If child specifies them, they override.
   if (childDetails.assetIndex) merged.assetIndex = childDetails.assetIndex;
   if (childDetails.assets) merged.assets = childDetails.assets;
-  if (childDetails.downloads) merged.downloads = childDetails.downloads;
-  // ... handle other potential overrides ...
+  if (childDetails.downloads) merged.downloads = childDetails.downloads; // This is important for client.jar, server.jar etc.
 
   console.log(
-    `VersionsManager: Merged details for ${merged.id} complete. Main class: ${merged.mainClass}`,
+    `VersionsManager: Merged details for ${merged.id} complete. Inherits from: ${merged.inheritsFrom}. Main class: ${merged.mainClass}. Library count: ${merged.libraries?.length}`,
   );
   return merged;
 }
@@ -269,7 +326,6 @@ export async function getVersionDetails(
   }
 
   // 2. If not a local-only (e.g. OptiFine) version, try fetching from web manifest
-  // This part is mostly for vanilla versions or those found in Mojang's manifest
   if (!manifest) {
     console.error(
       'VersionsManager: Cannot get version details without main manifest.',
