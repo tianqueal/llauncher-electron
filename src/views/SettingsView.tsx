@@ -59,16 +59,16 @@ function SettingsActionButton({
 // --- Main SettingsView Component ---
 export default function SettingsView() {
   const {
-    settings,
+    launcherProfiles,
     isLoading,
     isSaving,
     showSavedSuccess,
     showResetSuccess,
     validationErrors,
     hasValidationErrors,
-    handleChange,
+    handleSettingChange,
     handleSave,
-    handleReset,
+    handleSettingsReset,
   } = useSettings();
 
   return (
@@ -97,8 +97,8 @@ export default function SettingsView() {
               <SettingsField
                 key={fieldConfig.id}
                 config={fieldConfig}
-                value={settings[fieldConfig.id] ?? ''}
-                onChange={handleChange}
+                value={launcherProfiles.settings[fieldConfig.id] ?? ''}
+                onChange={handleSettingChange}
                 error={validationErrors[fieldConfig.id]}
               />
             ))}
@@ -109,7 +109,7 @@ export default function SettingsView() {
             <SettingsActionButton
               type="button"
               variant="secondary"
-              onClick={handleReset}
+              onClick={handleSettingsReset}
               isLoading={isSaving}
               isSuccess={showResetSuccess}
               disabled={isLoading || isSaving}
