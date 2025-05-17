@@ -1,17 +1,21 @@
 import { useState, useEffect, useCallback, FormEvent, useRef } from 'react';
-import { defaultSettings, SettingsState } from '../config/settingsConfig';
+import { defaultLauncherProfiles } from '../config/launcherProfilesConfig';
 import { getErrorMessage } from '../utils/errorUtils';
 import { debounce, DebouncedFunc } from 'lodash';
 import { SettingsErrors } from '../types/SettingsErrors';
 import { toast } from 'react-toastify';
 import { trimStringSettings } from '../utils/formatUtils';
 import validateSettings from '../utils/validateSettings';
+import { LauncherProfiles } from '../types/LauncherProfiles';
+import { SettingsState } from '../types/SettingsState';
 
 /**
- * Custom hook to manage settings state and interactions with auto-save.
+ * Custom hook to manage launcher profiles and interactions with auto-save.
  */
 export function useSettings() {
-  const [settings, setSettings] = useState<SettingsState>(defaultSettings);
+  const [launcherProfiles, setLauncherProfiles] = useState<LauncherProfiles>(
+    defaultLauncherProfiles,
+  );
   const [isLoading, setIsLoading] = useState(true);
   // States for EXPLICIT save feedback
   const [isSaving, setIsSaving] = useState(false);
@@ -25,12 +29,12 @@ export function useSettings() {
 
   // --- Debounced SILENT Auto-Save Function ---
   const debouncedAutoSaveRef = useRef<DebouncedFunc<
-    (settingsToSave: SettingsState) => Promise<void>
+    (launcherProfilesToSave: LauncherProfiles) => Promise<void>
   > | null>(null);
 
   // --- Function for EXPLICIT Save with UI Feedback ---
   const performExplicitSave = useCallback(
-    async (settingsToSave: SettingsState) => {
+    async (launcherProfilesToSave: LauncherProfiles) => {
       if (isSaving) return;
       setIsSaving(true); // Set saving state for UI feedback
       setShowSaveSuccess(false);
@@ -38,16 +42,19 @@ export function useSettings() {
       setError(null); // Clear previous errors on new save attempt
 
       // Trim string values before saving
-      const trimmedSettingsToSave = trimStringSettings(settingsToSave);
+      const trimmedSettingsToSave = trimStringSettings(
+        launcherProfilesToSave.settings,
+      );
       console.log(
         'useSettings: Performing EXPLICIT save with trimmed values...',
         trimmedSettingsToSave,
       );
 
       try {
-        const result = await window.electron.saveSettings(
-          trimmedSettingsToSave,
-        );
+        const result = await window.electron.saveLauncherProfiles({
+          ...launcherProfilesToSave,
+          ...trimmedSettingsToSave,
+        });
         if (result.success) {
           console.log('useSettings: Explicit save successful!');
           setShowSaveSuccess(true); // Set save success
@@ -85,11 +92,17 @@ export function useSettings() {
 
     const fetchSettings = async () => {
       try {
-        const loadedSettings = await window.electron.loadSettings();
-        console.log('useSettings: Received settings', loadedSettings);
-        const initialSettings = { ...defaultSettings, ...loadedSettings };
-        setSettings(initialSettings);
-        const initialErrors = validateSettings(initialSettings);
+        const loadedLauncherProfiles =
+          await window.electron.loadLauncherProfiles();
+        console.log('useSettings: Received settings', loadedLauncherProfiles);
+        const initialLauncherProfiles = {
+          ...defaultLauncherProfiles,
+          ...loadedLauncherProfiles,
+        };
+        setLauncherProfiles(initialLauncherProfiles);
+        const initialErrors = validateSettings(
+          initialLauncherProfiles.settings,
+        );
         setValidationErrors(initialErrors);
 
         if (Object.values(initialErrors).some((e) => e)) {
@@ -116,9 +129,11 @@ export function useSettings() {
 
     // Initialize the debounced SILENT auto-save function
     debouncedAutoSaveRef.current = debounce(
-      async (settingsToSave: SettingsState) => {
+      async (launcherProfilesToSave: LauncherProfiles) => {
         // Trim string values before validation and saving
-        const trimmedSettingsToSave = trimStringSettings(settingsToSave);
+        const trimmedSettingsToSave = trimStringSettings(
+          launcherProfilesToSave.settings,
+        );
 
         // --- Validate before silent auto-save ---
         const currentErrors = validateSettings(trimmedSettingsToSave); // Validate trimmed values
@@ -137,8 +152,10 @@ export function useSettings() {
           trimmedSettingsToSave,
         );
         try {
-          // Directly call saveSettings, DO NOT update isSaving/showSuccess
-          const result = await window.electron.saveSettings(settingsToSave);
+          // Directly call saveLauncherProfiles, DO NOT update isSaving/showSuccess
+          const result = await window.electron.saveLauncherProfiles(
+            launcherProfilesToSave,
+          );
           if (!result.success) {
             console.error(
               'useSettings: Silent auto-save failed:',
@@ -179,7 +196,7 @@ export function useSettings() {
     }
 
     // --- Validate on every change ---
-    const currentErrors = validateSettings(settings);
+    const currentErrors = validateSettings(launcherProfiles.settings);
     setValidationErrors(currentErrors); // Update validation state immediately
     // --- End Validation ---
 
@@ -187,23 +204,36 @@ export function useSettings() {
       console.log(
         'useSettings: Settings changed, triggering SILENT auto-save.',
       );
-      debouncedAutoSaveRef.current(settings);
+      debouncedAutoSaveRef.current(launcherProfiles);
     } else {
       console.warn(
         'useSettings: Debounced auto-save function not initialized yet.',
       );
     }
-  }, [settings, isLoading]); // Depend on settings and isLoading
+  }, [launcherProfiles, isLoading]); // Depend on settings and isLoading
 
   // Handler for input changes (updates local state, triggers auto-save effect)
-  const handleChange = useCallback(
-    (id: keyof SettingsState, value: string | number | boolean) => {
+  const handleSettingChange = useCallback(
+    <K extends keyof SettingsState>(id: K, value: SettingsState[K]) => {
       // Update the state with the raw value from the input
-      setSettings((prevSettings) => ({
-        ...prevSettings,
-        [id]: value,
+      setLauncherProfiles((prevLauncherProfiles) => ({
+        ...prevLauncherProfiles,
+        settings: {
+          ...prevLauncherProfiles.settings,
+          [id]: value,
+        },
       }));
       // Validation and auto-save (with trimming) are handled by the useEffect hook
+    },
+    [],
+  );
+
+  const handleLauncherProfilesChange = useCallback(
+    <K extends keyof LauncherProfiles>(id: K, value: LauncherProfiles[K]) => {
+      setLauncherProfiles((prevLauncherProfiles) => ({
+        ...prevLauncherProfiles,
+        [id]: value,
+      }));
     },
     [],
   );
@@ -216,7 +246,7 @@ export function useSettings() {
       debouncedAutoSaveRef.current?.cancel();
 
       // Trim values before validation for explicit save
-      const trimmedSettings = trimStringSettings(settings);
+      const trimmedSettings = trimStringSettings(launcherProfiles.settings);
 
       // --- Validate before explicit save ---
       const currentErrors = validateSettings(trimmedSettings);
@@ -238,13 +268,16 @@ export function useSettings() {
       // --- End Validation ---
 
       setError(null);
-      await performExplicitSave(settings);
+      await performExplicitSave({
+        ...launcherProfiles,
+        settings: trimmedSettings,
+      });
     },
-    [performExplicitSave, settings],
+    [performExplicitSave, launcherProfiles.settings],
   );
 
   // Handler for resetting settings
-  const handleReset = useCallback(async () => {
+  const handleSettingsReset = useCallback(async () => {
     if (isSaving) return; // Prevent concurrent operations
     debouncedAutoSaveRef.current?.cancel(); // Cancel pending auto-saves
 
@@ -256,14 +289,25 @@ export function useSettings() {
     console.log('useSettings: Resetting settings to default...');
 
     try {
+      const settingsToReset = {
+        ...launcherProfiles,
+        settings: defaultLauncherProfiles.settings,
+      };
+      console.log(
+        'useSettings: Default settings to be applied:',
+        settingsToReset,
+      );
+
       // Set local state first for immediate UI update
-      setSettings(defaultSettings);
+      setLauncherProfiles(settingsToReset);
       // Validate the default settings (should pass)
-      const defaultErrors = validateSettings(defaultSettings);
+      const defaultErrors = validateSettings(defaultLauncherProfiles.settings);
       setValidationErrors(defaultErrors);
 
       // Then save the default settings
-      const result = await window.electron.saveSettings(defaultSettings);
+      const result =
+        await window.electron.saveLauncherProfiles(settingsToReset);
+
       if (result.success) {
         console.log('useSettings: Reset successful!');
         setShowResetSuccess(true); // Set reset success
@@ -287,12 +331,12 @@ export function useSettings() {
     } finally {
       setIsSaving(false); // Clear saving state
     }
-  }, [isSaving]);
+  }, [isSaving, launcherProfiles, defaultLauncherProfiles.settings]);
 
   const hasValidationErrors = Object.values(validationErrors).some((e) => e);
 
   return {
-    settings,
+    launcherProfiles,
     isLoading,
     isSaving,
     showSavedSuccess,
@@ -300,8 +344,9 @@ export function useSettings() {
     error, // General error state
     validationErrors, // Field-specific validation errors
     hasValidationErrors,
-    handleChange,
+    handleSettingChange,
+    handleLauncherProfilesChange,
     handleSave, // Explicit save action
-    handleReset,
+    handleSettingsReset,
   };
 }
