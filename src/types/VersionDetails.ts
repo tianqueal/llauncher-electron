@@ -5,6 +5,7 @@ export interface VersionDetails {
   complianceLevel: number;
   downloads: VersionDownloads; // Renamed from ManifestDownloads
   id: string;
+  inheritsFrom?: string;
   javaVersion: JavaVersion;
   libraries: Array<Library>;
   logging: Logging;
@@ -92,7 +93,7 @@ export interface JavaVersion {
 }
 
 export interface Library {
-  downloads: LibraryDownloads;
+  downloads?: LibraryDownloads;
   name: string;
   rules?: Array<LibraryRule>;
   natives?: Natives; // For native libraries
@@ -100,7 +101,7 @@ export interface Library {
 }
 
 export interface LibraryDownloads {
-  artifact: DownloadDetails;
+  artifact?: DownloadDetails;
   classifiers?: { [key: string]: DownloadDetails }; // For natives like 'natives-windows'
 }
 

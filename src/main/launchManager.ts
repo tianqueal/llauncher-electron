@@ -281,10 +281,20 @@ function getRequiredInitialDownloads(
 
   // 2. Libraries
   versionDetails.libraries.forEach((lib) => {
+    // Ensure the library object and its name are valid before proceeding
+    if (!lib || typeof lib.name !== 'string') {
+      console.warn(
+        'LaunchManager: Skipping invalid library entry during initial download scan:',
+        lib,
+      );
+      return; // Skip this library entry
+    }
+
     const allow = lib.rules ? lib.rules.every(checkRule) : true;
     if (!allow) return;
 
-    if (lib.downloads.artifact?.path) {
+    if (lib.downloads?.artifact?.path) {
+      // Optional chaining for lib.downloads and lib.downloads.artifact
       tasks.push({
         url: lib.downloads.artifact.url,
         destination: path.join(
@@ -293,14 +303,19 @@ function getRequiredInitialDownloads(
         ),
         sha1: lib.downloads.artifact.sha1,
         size: lib.downloads.artifact.size,
-        label: path.basename(lib.downloads.artifact.path), // Add label
+        label: path.basename(lib.downloads.artifact.path),
       });
+    } else {
+      // This library might be one provided by OptiFine/Forge locally, or an invalid entry
+      console.log(
+        `LaunchManager: Library ${lib.name} does not have downloadable artifact details. Skipping download. (Expected for OptiFine libs)`,
+      );
     }
     // TODO: Natives handling
   });
 
   // 3. Asset Index
-  if (versionDetails.assetIndex) {
+  if (versionDetails.assetIndex?.url) {
     tasks.push({
       url: versionDetails.assetIndex.url,
       destination: path.join(
@@ -361,11 +376,53 @@ function buildClasspath(
 
   // Add libraries
   versionDetails.libraries.forEach((lib) => {
-    const allow = lib.rules ? lib.rules.every(checkRule) : true;
-    if (allow && lib.downloads.artifact?.path) {
-      classPathEntries.push(
-        path.join(paths.librariesPath, lib.downloads.artifact.path),
+    // Ensure the library object and its name are valid before proceeding
+    if (!lib || typeof lib.name !== 'string') {
+      console.warn(
+        'LaunchManager: Skipping invalid library entry during classpath construction:',
+        lib,
       );
+      return; // Skip this library entry
+    }
+
+    const allow = lib.rules ? lib.rules.every(checkRule) : true;
+    if (allow) {
+      if (lib.downloads?.artifact?.path) {
+        // Library has a defined artifact path
+        classPathEntries.push(
+          path.join(paths.librariesPath, lib.downloads.artifact.path),
+        );
+      } else if (lib.name) {
+        // Library does not have a downloads.artifact.path
+        // Construct path from name
+        const nameParts = lib.name.split(':');
+        if (nameParts.length === 3) {
+          const [groupId, artifactId, version] = nameParts;
+          const groupIdPath = groupId.replace(/\./g, '/'); // Replace dots with slashes for path
+
+          // Standard Maven artifact naming: artifactId-version.jar
+          const libFileName = `${artifactId}-${version}.jar`;
+          const libRelativePath = path.join(
+            groupIdPath,
+            artifactId,
+            version,
+            libFileName,
+          );
+          const fullLibPath = path.join(paths.librariesPath, libRelativePath);
+
+          // It's good practice to check if the file exists ...
+          // If not, the ClassNotFoundException would occur anyway.
+          classPathEntries.push(fullLibPath);
+          console.log(
+            `LaunchManager: Added library to classpath from name: ${fullLibPath}`,
+          );
+        } else {
+          // Handle cases with classifiers in the name if necessary, or log a warning.
+          console.warn(
+            `LaunchManager: Library ${lib.name} has no artifact path and a non-standard name format for classpath construction. It might be missing from classpath.`,
+          );
+        }
+      }
     }
     // Natives are usually handled via java.library.path, not classpath
   });
