@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { SettingsState } from './config/settingsConfig';
+import { LauncherProfiles } from './types/LauncherProfiles';
 import { LocalVersion } from './types/LocalVersion';
 import { VersionManifest } from './types/VersionManifest';
 import { PatchNotes } from './types/PatchNotes';
@@ -28,14 +28,14 @@ contextBridge.exposeInMainWorld('electron', {
     ) => void,
   ) => ipcRenderer.on('update-theme', callback),
 
-  // Settings
-  saveSettings: (
-    settings: SettingsState,
-  ): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('save-settings', settings),
+  // Launcher Profiles
+  loadLauncherProfiles: (): Promise<LauncherProfiles> =>
+    ipcRenderer.invoke('load-launcher-profiles'),
 
-  loadSettings: (): Promise<SettingsState> =>
-    ipcRenderer.invoke('load-settings'),
+  saveLauncherProfiles: (
+    launcherProfiles: LauncherProfiles,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('save-launcher-profiles', launcherProfiles),
 
   // Versions
   listVersions: (): Promise<Array<LocalVersion>> =>
