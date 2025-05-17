@@ -1,5 +1,5 @@
 import { settingsFields } from '../config/settingsFields';
-import { SettingsState } from '../config/settingsConfig';
+import { SettingsState } from '../types/SettingsState';
 import { SettingsErrors } from '../types/SettingsErrors';
 import { SettingFieldType } from '../types/SettingFieldConfig';
 
