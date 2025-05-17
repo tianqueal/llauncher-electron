@@ -26,7 +26,7 @@ if (started) {
 
 // --- Paths ---
 const userDataPath = app.getPath('userData');
-const settingsPath = path.join(userDataPath, 'settings.json');
+const launcherProfilesPath = path.join(userDataPath, 'launcher_profiles.json');
 const versionsPath = path.join(userDataPath, 'versions');
 const manifestPath = path.join(userDataPath, 'version_manifest_v2.json');
 const patchNotesPath = path.join(userDataPath, 'javaPatchNotes.json');
@@ -35,7 +35,7 @@ const patchNotesPath = path.join(userDataPath, 'javaPatchNotes.json');
 // --- Register IPC Handlers ---
 // Call this early, before the window is created and tries to use IPC
 registerIpcHandlers({
-  settingsPath,
+  launcherProfilesPath,
   versionsPath,
   manifestPath,
   patchNotesPath,
@@ -80,10 +80,13 @@ app.on('ready', async () => {
   // Ensure directories and initial manifest exist before creating the window
   try {
     ensureVersionsDirExists(versionsPath);
-    const settingsDir = path.dirname(settingsPath);
-    if (!fs.existsSync(settingsDir)) {
-      fs.mkdirSync(settingsDir, { recursive: true });
-      console.log('Settings directory created at:', settingsDir);
+    const launcherProfilesDir = path.dirname(launcherProfilesPath);
+    if (!fs.existsSync(launcherProfilesDir)) {
+      fs.mkdirSync(launcherProfilesDir, { recursive: true });
+      console.log(
+        'Launcher Profiles directory created at:',
+        launcherProfilesDir,
+      );
     }
     // Ensure manifest exists (fetches if it doesn't) - await this before window creation
     await Promise.all([
