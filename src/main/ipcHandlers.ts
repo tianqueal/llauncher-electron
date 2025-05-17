@@ -1,13 +1,16 @@
 import fs from 'node:fs';
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
-import { loadSettings, saveSettings } from '../utils/settingsManager';
+import {
+  loadLauncherProfiles,
+  saveLauncherProfiles,
+} from '../utils/launcherProfilesManager';
 import {
   deleteVersion,
   getVersionDetails,
   listInstalledVersions,
 } from './versionsManager';
 import { readLocalManifest } from './manifestManager';
-import { SettingsState } from '../config/settingsConfig';
+import { LauncherProfiles } from '../types/LauncherProfiles';
 import { readLocalPatchNotes } from './patchNotesManager';
 import path from 'node:path';
 import { killRunningProcess, launchVersion } from './launchManager';
@@ -15,18 +18,18 @@ import { getErrorMessage } from '../utils/errorUtils';
 
 /**
  * Registers all IPC handlers for the main process.
- * @param settingsPath Absolute path to the settings file.
+ * @param launcherProfilesPath Absolute path to the launcher settings file.
  * @param versionsPath Absolute path to the versions directory.
  * @param manifestPath Absolute path to the local manifest file.
  * @param patchNotesPath Absolute path to the local patch notes file.
  */
 export function registerIpcHandlers({
-  settingsPath,
+  launcherProfilesPath,
   versionsPath,
   manifestPath,
   patchNotesPath,
 }: {
-  settingsPath: string;
+  launcherProfilesPath: string;
   versionsPath: string;
   manifestPath: string;
   patchNotesPath: string;
@@ -35,14 +38,17 @@ export function registerIpcHandlers({
 
   // --- Data Retrieval Handlers ---
   // Settings
-  ipcMain.handle('load-settings', () => {
-    console.log('IPC: Handling load-settings');
-    return loadSettings(settingsPath);
+  ipcMain.handle('load-launcher-profiles', () => {
+    console.log('IPC: Handling load-launcher-profiles');
+    return loadLauncherProfiles(launcherProfilesPath);
   });
-  ipcMain.handle('save-settings', (_event, settingsData: SettingsState) => {
-    console.log('IPC: Handling save-settings');
-    return saveSettings(settingsPath, settingsData);
-  });
+  ipcMain.handle(
+    'save-launcher-profiles',
+    (_event, launcherProfilesData: LauncherProfiles) => {
+      console.log('IPC: Handling save-launcher-profiles');
+      return saveLauncherProfiles(launcherProfilesPath, launcherProfilesData);
+    },
+  );
 
   // Installed Versions
   ipcMain.handle('list-versions', async () => {
@@ -82,10 +88,10 @@ export function registerIpcHandlers({
     const mainWindow = BrowserWindow.fromWebContents(event.sender); // Get window to send feedback
 
     try {
-      // 1. Load Settings
-      const settings = await loadSettings(settingsPath);
-      if (!settings) {
-        throw new Error('Failed to load settings before launch.');
+      // 1. Load Launcher Profiles
+      const launcherProfiles = await loadLauncherProfiles(launcherProfilesPath);
+      if (!launcherProfiles || !launcherProfiles.settings) {
+        throw new Error('Failed to load launcher settings before launch.');
       }
 
       // 2. Get Version Details (re-fetch to ensure consistency)
@@ -119,7 +125,12 @@ export function registerIpcHandlers({
       };
 
       // 4. Trigger Launch (asynchronous, feedback via webContents.send)
-      launchVersion(versionDetails, settings, gamePaths, mainWindow);
+      launchVersion(
+        versionDetails,
+        launcherProfiles.settings,
+        gamePaths,
+        mainWindow,
+      );
 
       return { success: true, message: 'Launch process initiated.' }; // Initial confirmation
     } catch (err: unknown) {
